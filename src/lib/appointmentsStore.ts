@@ -8,6 +8,7 @@ const SHEET_ENDPOINT = import.meta.env.VITE_SHEETS_ENDPOINT_URL as string | unde
 
 const listeners = new Set<(appointments: AppointmentRecord[]) => void>();
 let remotePollHandle: number | undefined;
+let cachedAppointments: AppointmentRecord[] = [];
 
 const hasRemoteSheet = BACKEND_MODE === 'sheet' && Boolean(SHEET_ENDPOINT);
 
@@ -98,7 +99,25 @@ const readLocalAppointments = (): AppointmentRecord[] => {
 };
 
 const writeLocalAppointments = (appointments: AppointmentRecord[]) => {
+  cachedAppointments = appointments;
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(appointments));
+};
+
+const emitAppointments = (appointments: AppointmentRecord[]) => {
+  cachedAppointments = appointments;
+  listeners.forEach((listener) => listener(appointments));
+};
+
+const upsertCachedAppointment = (appointment: AppointmentRecord, id?: string) => {
+  const targetId = String(id || appointment.id);
+
+  return cachedAppointments.some((item) => item.id === targetId)
+    ? cachedAppointments.map((item) => (item.id === targetId ? { ...item, ...appointment, id: targetId } : item))
+    : [...cachedAppointments, { ...appointment, id: targetId }];
+};
+
+const deleteCachedAppointment = (id: string) => {
+  return cachedAppointments.filter((appointment) => appointment.id !== id);
 };
 
 const readRemoteAppointments = async (): Promise<AppointmentRecord[]> => {
@@ -129,7 +148,7 @@ const readRemoteAppointments = async (): Promise<AppointmentRecord[]> => {
 
 const broadcast = async () => {
   const appointments = hasRemoteSheet ? await readRemoteAppointments() : readLocalAppointments();
-  listeners.forEach((listener) => listener(appointments));
+  emitAppointments(appointments);
 };
 
 const ensureRemotePolling = () => {
@@ -138,7 +157,9 @@ const ensureRemotePolling = () => {
   }
 
   remotePollHandle = window.setInterval(() => {
-    void broadcast();
+    void broadcast().catch((error) => {
+      console.warn('No se pudo refrescar la agenda remota.', error);
+    });
   }, 10000);
 };
 
@@ -175,7 +196,9 @@ export const subscribeToAppointments = (callback: (appointments: AppointmentReco
   listeners.add(callback);
   ensureRemotePolling();
 
-  void broadcast();
+  void broadcast().catch((error) => {
+    console.warn('No se pudo cargar la agenda inicial.', error);
+  });
 
   return () => {
     listeners.delete(callback);
@@ -233,7 +256,11 @@ const persistRemoteAppointment = async (appointment: AppointmentRecord, id?: str
     throw new Error(`No se pudo guardar el turno (${response.status})`);
   }
 
-  await broadcast();
+  emitAppointments(upsertCachedAppointment(appointment, id));
+
+  void broadcast().catch((error) => {
+    console.warn('No se pudo refrescar la agenda remota luego de guardar.', error);
+  });
 };
 
 const deleteRemoteAppointment = async (id: string) => {
@@ -258,7 +285,11 @@ const deleteRemoteAppointment = async (id: string) => {
     throw new Error(`No se pudo eliminar el turno (${response.status})`);
   }
 
-  await broadcast();
+  emitAppointments(deleteCachedAppointment(id));
+
+  void broadcast().catch((error) => {
+    console.warn('No se pudo refrescar la agenda remota luego de eliminar.', error);
+  });
 };
 
 export const saveAppointment = async (data: Partial<AppointmentRecord>, id?: string) => {
