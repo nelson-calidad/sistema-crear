@@ -35,7 +35,7 @@ import { AppointmentRecord } from '../types';
 import { ROOMS } from '../constants';
 import { buildDailyPdfHtml, buildMonthlyPdfHtml, openPrintableReport } from '../lib/appointmentPdf';
 import { useProfessionals } from '../lib/professionalsStore';
-import { refreshAppointments } from '../lib/appointmentsStore';
+import { forceRefreshAppointments } from '../lib/appointmentsStore';
 
 const HOURS = Array.from({ length: 14 }, (_, i) => 8 + i);
 const UNASSIGNED_COLUMN = { id: 'unassigned', name: 'Sin asignar', color: 'bg-slate-400' };
@@ -394,7 +394,7 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
 
           <button
             onClick={() => {
-              void refreshAppointments().catch((error) => {
+              void forceRefreshAppointments().catch((error) => {
                 console.warn('No se pudo refrescar la agenda manualmente.', error);
               });
             }}

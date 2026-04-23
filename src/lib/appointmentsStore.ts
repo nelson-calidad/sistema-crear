@@ -233,6 +233,15 @@ export const refreshAppointments = async () => {
   await broadcast();
 };
 
+export const forceRefreshAppointments = async () => {
+  if (typeof window !== 'undefined') {
+    window.localStorage.removeItem(STORAGE_KEY);
+  }
+
+  cachedAppointments = [];
+  await broadcast();
+};
+
 const ensureRemotePolling = () => {
   if (!hasRemoteSheet || remotePollHandle || typeof window === 'undefined') {
     return;
