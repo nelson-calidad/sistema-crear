@@ -6,7 +6,7 @@ import { BUILD_ID } from './buildInfo';
 
 const ensureFreshBuild = async () => {
   try {
-    const response = await fetch(`/version.json?_ts=${Date.now()}`, {
+    const response = await fetch(`${import.meta.env.BASE_URL}version.json?_ts=${Date.now()}`, {
       cache: 'no-store',
     });
 
