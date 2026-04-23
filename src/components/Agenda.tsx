@@ -91,14 +91,17 @@ const getTypeStyles = (type?: string) => {
 
 const sortByStart = (items: AppointmentRecord[]) => [...items].sort((a, b) => a.start.localeCompare(b.start));
 
-const getAssignedLabel = (appointment: AppointmentRecord) => {
+const getCorrespondsToLabel = (appointment: AppointmentRecord) => {
   const pro = PROFESSIONALS.find((p) => p.id === appointment.proId);
   const room = ROOMS.find((r) => r.id === appointment.roomId);
 
-  if (room) return room.name;
+  if (pro && room) return `${pro.name} · ${room.name}`;
   if (pro) return pro.name;
+  if (room) return room.name;
   return 'Sin asignar';
 };
+
+const getCoverageLabel = (appointment: AppointmentRecord) => appointment.coverageType || 'particular';
 
 const hasAssignment = (appointment: AppointmentRecord) => Boolean(appointment.proId || appointment.roomId);
 
@@ -324,26 +327,21 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
                           <p className="text-[10px] font-black uppercase tracking-[0.18em] mb-1.5">
                             {app.start} - {app.end}
                           </p>
-                          <p className="font-bold text-[13px] truncate leading-tight">{formatLabel(app.title)}</p>
-                          <div className="mt-2 flex flex-wrap gap-1.5">
-                            <span className="inline-flex items-center rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-bold">
-                              {room?.name || 'Sin sala'}
-                            </span>
-                            <span className="inline-flex items-center rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-bold">
-                              {pro?.name || 'Sin profe'}
-                            </span>
-                          </div>
-                          <p className="text-[11px] opacity-80 mt-2 truncate">
-                            {app.patient || app.notes || 'Sin detalle adicional'}
+                          <p className="font-bold text-[13px] truncate leading-tight">{formatLabel(app.patient || app.title)}</p>
+                          <p className="mt-1.5 text-[11px] font-semibold uppercase tracking-wide opacity-80 truncate">
+                            {getTypeLabel(app.type)}
+                          </p>
+                          <p className="mt-1.5 text-[11px] opacity-80 truncate">
+                            {getCorrespondsToLabel(app)}
                           </p>
                         </div>
                         <span className="text-[10px] font-black uppercase opacity-75 shrink-0">
-                          {getTypeLabel(app.type)}
+                          {getCoverageLabel(app)}
                         </span>
                       </div>
                       <div className="mt-2 flex items-center justify-between text-[9px] font-bold uppercase opacity-70">
-                        <span>{app.recurrence && app.recurrence !== 'none' ? app.recurrence : 'Único'}</span>
-                        <span>{app.proId || app.roomId ? 'Asignado' : 'Libre'}</span>
+                        <span>{getCoverageLabel(app)}</span>
+                        <span>{getCorrespondsToLabel(app)}</span>
                       </div>
                     </button>
                   );
@@ -449,17 +447,17 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
                                   {app.start}
                                 </span>
                                 <span className="text-[8px] font-black tracking-widest uppercase opacity-75">
-                                  {getTypeLabel(app.type)}
+                                  {getCoverageLabel(app)}
                                 </span>
                               </div>
 
-                              <p className="text-[12px] font-bold truncate leading-tight mt-1">{formatLabel(app.title)}</p>
+                              <p className="text-[12px] font-bold truncate leading-tight mt-1">{formatLabel(app.patient || app.title)}</p>
                               <p className="text-[10px] font-medium truncate opacity-80 mt-0.5">
-                                {app.patient || app.notes || 'Sin detalle'}
+                                {getTypeLabel(app.type)} - {getCorrespondsToLabel(app)}
                               </p>
 
                               <div className="mt-1.5 flex items-center justify-between gap-1 text-[8px] font-bold uppercase tracking-wide opacity-75">
-                                <span className="truncate">{getAssignedLabel(app)}</span>
+                                <span className="truncate">{getCoverageLabel(app)}</span>
                                 <span className="shrink-0">{app.end}</span>
                               </div>
                             </motion.div>
@@ -537,9 +535,13 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
                             >
                               <div className="flex items-center justify-between gap-2">
                                 <span className="truncate">
-                                  {app.start} {formatLabel(app.title)}
+                                  {app.start} {formatLabel(app.patient || app.title)}
                                 </span>
-                                <span className="opacity-70">{room?.name || pro?.name || 'Sys'}</span>
+                                <span className="opacity-70">{getCoverageLabel(app)}</span>
+                              </div>
+                              <div className="mt-1 flex items-center justify-between gap-2 text-[8px] font-bold uppercase opacity-70">
+                                <span className="truncate">{getTypeLabel(app.type)}</span>
+                                <span className="truncate">{room?.name || pro?.name || 'Sys'}</span>
                               </div>
                             </div>
                           );

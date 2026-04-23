@@ -61,6 +61,7 @@ const normalizeAppointment = (appointment: Partial<AppointmentRecord> & Record<s
   id: String(appointment.id || createId()),
   title: String(appointment.title || 'Nueva Reserva'),
   type: (appointment.type as AppointmentRecord['type']) || 'session',
+  coverageType: (appointment.coverageType as AppointmentRecord['coverageType']) || 'particular',
   proId: appointment.proId ? String(appointment.proId) : undefined,
   roomId: appointment.roomId ? String(appointment.roomId) : undefined,
   patient: appointment.patient ? String(appointment.patient) : undefined,

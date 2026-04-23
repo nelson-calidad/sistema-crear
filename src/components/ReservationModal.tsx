@@ -31,6 +31,7 @@ interface ReservationModalProps {
 
 export const ReservationModal = ({ isOpen, onClose, room, professional, initialData, onSave, onDelete }: ReservationModalProps) => {
   const [type, setType] = useState<'session' | 'interview' | 'survey'>(initialData?.type || 'session');
+  const [coverageType, setCoverageType] = useState<'obra social' | 'particular'>(initialData?.coverageType || 'particular');
   const [recurrence, setRecurrence] = useState<'none' | 'daily' | 'weekly' | 'weekdays'>('none');
   const [selectedDays, setSelectedDays] = useState<number[]>([]); // 0-6 for Sun-Sat
 
@@ -73,6 +74,7 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, initialD
     if (isOpen) {
       if (initialData) {
         setType(initialData.type);
+        setCoverageType(initialData.coverageType || 'particular');
         setSelectedProId(initialData.proId || '');
         setSelectedRoomId(initialData.roomId || '');
         setFormData({
@@ -90,6 +92,7 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, initialD
           startTime: '08:00',
           notes: ''
         }));
+        setCoverageType('particular');
         if (professional) {
           const pro = PROFESSIONALS.find(p => p.name === professional);
           if (pro) setSelectedProId(pro.id);
@@ -114,6 +117,7 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, initialD
     onSave({
       ...formData,
       type,
+      coverageType,
       proId: selectedProId,
       roomId: selectedRoomId,
       recurrence,
@@ -187,6 +191,18 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, initialD
                   {t.label}
                 </button>
               ))}
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Cobertura</label>
+              <select
+                value={coverageType}
+                onChange={(e) => setCoverageType(e.target.value as 'obra social' | 'particular')}
+                className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-blue-100"
+              >
+                <option value="particular">Particular</option>
+                <option value="obra social">Obra social</option>
+              </select>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">

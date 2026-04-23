@@ -72,6 +72,7 @@ export interface AppointmentRecord {
   id: string;
   title: string;
   type: 'session' | 'interview' | 'survey';
+  coverageType?: 'obra social' | 'particular';
   proId?: string;
   roomId?: string;
   patient?: string;

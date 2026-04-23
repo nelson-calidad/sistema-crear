@@ -16,6 +16,7 @@ const HEADER = [
   'createdBy',
   'createdAt',
   'updatedAt',
+  'coverageType',
 ];
 
 function doGet() {
@@ -75,6 +76,8 @@ function ensureSheet_() {
   if (isEmptyHeader) {
     sheet.getRange(1, 1, 1, HEADER.length).setValues([HEADER]);
     sheet.setFrozenRows(1);
+  } else if (!firstRow[HEADER.indexOf('coverageType')]) {
+    sheet.getRange(1, HEADER.indexOf('coverageType') + 1).setValue('coverageType');
   }
 
   return sheet;
@@ -125,6 +128,7 @@ function normalizeAppointment_(appointment) {
     id: String(appointment.id || newId_()),
     title: String(appointment.title || 'Nueva Reserva'),
     type: String(appointment.type || 'session'),
+    coverageType: String(appointment.coverageType || 'particular'),
     proId: appointment.proId ? String(appointment.proId) : '',
     roomId: appointment.roomId ? String(appointment.roomId) : '',
     patient: appointment.patient ? String(appointment.patient) : '',
