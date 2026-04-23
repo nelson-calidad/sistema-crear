@@ -51,6 +51,16 @@ const formatTimeOnly = (value?: string) => {
   return String(value).slice(0, 5);
 };
 
+const getAppointmentName = (appointment: AppointmentRecord) => {
+  const raw = appointment.patient?.trim() || appointment.title?.trim() || '';
+
+  if (!raw || raw === 'Nueva Reserva') {
+    return 'Sin nombre';
+  }
+
+  return raw;
+};
+
 const getTypeLabel = (type?: string) => {
   if (type === 'interview') return 'Entrevista';
   if (type === 'survey') return 'Encuesta';
@@ -69,7 +79,22 @@ const getCorrespondsToLabel = (appointment: AppointmentRecord, professionals: Pr
   return 'Sin asignar';
 };
 
-const sortByStart = (items: AppointmentRecord[]) => [...items].sort((a, b) => a.start.localeCompare(b.start));
+const parseTimeToMinutes = (value?: string) => {
+  if (!value) return Number.POSITIVE_INFINITY;
+
+  const match = String(value).match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) return Number.POSITIVE_INFINITY;
+
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+    return Number.POSITIVE_INFINITY;
+  }
+
+  return hours * 60 + minutes;
+};
+
+const sortByStart = (items: AppointmentRecord[]) => [...items].sort((a, b) => parseTimeToMinutes(a.start) - parseTimeToMinutes(b.start));
 
 const getStats = (appointments: AppointmentRecord[]) => {
   const coverage = appointments.reduce(
@@ -262,7 +287,7 @@ const renderReportShell = (title: string, subtitle: string, body: string, landsc
 const openPrintWindow = (title: string, html: string) => {
   if (typeof window === 'undefined') return;
 
-  const printWindow = window.open('', '_blank', 'noopener,noreferrer,width=1280,height=900');
+  const printWindow = window.open('', '_blank', 'width=1280,height=900');
   if (!printWindow) {
     return;
   }
@@ -272,6 +297,14 @@ const openPrintWindow = (title: string, html: string) => {
   printWindow.document.close();
   printWindow.document.title = title;
   printWindow.focus();
+
+  window.setTimeout(() => {
+    try {
+      printWindow.print();
+    } catch {
+      // If the popup cannot print automatically, the rendered document remains available.
+    }
+  }, 300);
 };
 
 export const buildDailyPdfHtml = (selectedDate: Date, appointments: AppointmentRecord[]) => {
@@ -288,7 +321,7 @@ export const buildDailyPdfHtml = (selectedDate: Date, appointments: AppointmentR
     ? sorted.map((appointment) => `
       <tr>
         <td><strong>${escapeHtml(formatTimeOnly(appointment.start))}</strong><div class="subtle">${escapeHtml(formatTimeOnly(appointment.end))}</div></td>
-        <td><strong>${escapeHtml(appointment.patient || appointment.title || 'Sin título')}</strong><div class="subtle">${escapeHtml(getCorrespondsToLabel(appointment, professionals))}</div></td>
+        <td><strong>${escapeHtml(getAppointmentName(appointment))}</strong><div class="subtle">${escapeHtml(getCorrespondsToLabel(appointment, professionals))}</div></td>
         <td><span class="badge ${appointment.type}">${escapeHtml(getTypeLabel(appointment.type))}</span></td>
         <td><span class="badge coverage">${escapeHtml(getCoverageLabel(appointment))}</span></td>
         <td>${escapeHtml(appointment.notes || '-')}</td>
@@ -382,7 +415,7 @@ export const buildMonthlyPdfHtml = (selectedDate: Date, appointments: Appointmen
                     <div class="subtle">${escapeHtml(getCorrespondsToLabel(appointment, professionals))}</div>
                   </div>
                   <div>
-                    <div><strong>${escapeHtml(appointment.patient || appointment.title || 'Sin título')}</strong></div>
+                    <div><strong>${escapeHtml(getAppointmentName(appointment))}</strong></div>
                     <div class="subtle">
                       <span class="badge ${appointment.type}">${escapeHtml(getTypeLabel(appointment.type))}</span>
                       <span style="display:inline-block;width:6px"></span>

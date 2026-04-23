@@ -121,7 +121,7 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
         setSelectedProId(initialData.proId || '');
         setSelectedRoomId(initialData.roomId || '');
         setFormData({
-          patient: initialData.title,
+          patient: initialData.patient || initialData.title || '',
           date: initialData.date || new Date().toISOString().split('T')[0],
           startTime: initialData.start,
           endTime: initialData.end || '09:00',

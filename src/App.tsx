@@ -162,11 +162,13 @@ export default function App() {
             return;
           }
           try {
+            const patientName = data.patient?.trim();
             const appointmentData = {
               ...data,
               start: data.startTime,
               end: data.endTime,
-              title: data.patient || (data.type === 'survey' ? 'Encuesta' : 'Nueva Reserva'),
+              patient: patientName || undefined,
+              title: patientName || (data.type === 'survey' ? 'Encuesta' : 'Sin nombre'),
               createdBy: user.uid
             };
             await saveAppointment(appointmentData, modalContext.appointment?.id);

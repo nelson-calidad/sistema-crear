@@ -22,6 +22,26 @@ const createId = () => {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 };
 
+const normalizeTime = (value?: unknown, fallback = '08:00') => {
+  if (typeof value !== 'string') {
+    return fallback;
+  }
+
+  const raw = value.trim();
+  const match = raw.match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) {
+    return fallback;
+  }
+
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+    return fallback;
+  }
+
+  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+};
+
 const demoAppointments: AppointmentRecord[] = [
   {
     id: 'demo-1',
@@ -67,8 +87,8 @@ const normalizeAppointment = (appointment: Partial<AppointmentRecord> & Record<s
   patient: appointment.patient ? String(appointment.patient) : undefined,
   notes: appointment.notes ? String(appointment.notes) : undefined,
   date: String(appointment.date || today()),
-  start: String(appointment.start || '08:00'),
-  end: String(appointment.end || '08:45'),
+  start: normalizeTime(appointment.start, '08:00'),
+  end: normalizeTime(appointment.end, '08:45'),
   recurrence: (appointment.recurrence as AppointmentRecord['recurrence']) || 'none',
   selectedDays: Array.isArray(appointment.selectedDays) ? appointment.selectedDays.map(Number) : [],
   createdBy: appointment.createdBy ? String(appointment.createdBy) : undefined,
@@ -83,19 +103,18 @@ const readLocalAppointments = (): AppointmentRecord[] => {
 
   const raw = window.localStorage.getItem(STORAGE_KEY);
   if (!raw) {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(demoAppointments));
-    return demoAppointments;
+    return hasRemoteSheet ? [] : demoAppointments;
   }
 
   try {
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) {
-      return demoAppointments;
+      return hasRemoteSheet ? [] : demoAppointments;
     }
 
     return parsed.map((item) => normalizeAppointment(item));
   } catch {
-    return demoAppointments;
+    return hasRemoteSheet ? [] : demoAppointments;
   }
 };
 
@@ -150,7 +169,7 @@ const readRemoteAppointments = async (): Promise<AppointmentRecord[]> => {
     return normalized;
   } catch (error) {
     console.warn('Leyendo desde el cache local porque falló el Sheet.', error);
-    return readLocalAppointments();
+    return cachedAppointments.length ? cachedAppointments : readLocalAppointments();
   }
 };
 

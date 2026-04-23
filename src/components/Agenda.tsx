@@ -78,7 +78,15 @@ const parseDay = (value?: string | Date | null) => {
   return null;
 };
 
-const formatLabel = (value?: string) => value || 'Sin título';
+const getAppointmentName = (appointment: AppointmentRecord) => {
+  const raw = appointment.patient?.trim() || appointment.title?.trim() || '';
+
+  if (!raw || raw === 'Nueva Reserva') {
+    return 'Sin nombre';
+  }
+
+  return raw;
+};
 
 const getTypeLabel = (type?: string) => {
   if (type === 'interview') return 'Entrevista';
@@ -92,7 +100,22 @@ const getTypeStyles = (type?: string) => {
   return 'bg-blue-50 text-blue-900 border-blue-200';
 };
 
-const sortByStart = (items: AppointmentRecord[]) => [...items].sort((a, b) => a.start.localeCompare(b.start));
+const parseTimeToMinutes = (value?: string) => {
+  if (!value) return Number.POSITIVE_INFINITY;
+
+  const match = String(value).match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) return Number.POSITIVE_INFINITY;
+
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+    return Number.POSITIVE_INFINITY;
+  }
+
+  return hours * 60 + minutes;
+};
+
+const sortByStart = (items: AppointmentRecord[]) => [...items].sort((a, b) => parseTimeToMinutes(a.start) - parseTimeToMinutes(b.start));
 
 const formatTimeOnly = (value?: string) => {
   if (!value) return '--:--';
@@ -188,15 +211,12 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
 
   const visibleAppointments = sortByStart(selectedDateAppointments);
   const getPositionFromTime = (timeStr: string) => {
-    const [h, m] = timeStr.split(':').map(Number);
-    const minutesSinceStart = (h - 8) * 60 + m;
+    const minutesSinceStart = parseTimeToMinutes(timeStr) - (8 * 60);
     return (minutesSinceStart / 60) * 100;
   };
 
   const getHeightFromInterval = (start: string, end: string) => {
-    const [hS, mS] = start.split(':').map(Number);
-    const [hE, mE] = end.split(':').map(Number);
-    const duration = hE * 60 + mE - (hS * 60 + mS);
+    const duration = parseTimeToMinutes(end) - parseTimeToMinutes(start);
     return Math.max((duration / 60) * 100, 70);
   };
 
@@ -233,7 +253,7 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
     const targetTop = firstAppointment ? Math.max(getPositionFromTime(firstAppointment.start) - 120, 0) : 0;
 
     const frame = window.requestAnimationFrame(() => {
-      container.scrollTo({ top: targetTop, behavior: 'smooth' });
+      container.scrollTop = targetTop;
     });
 
     return () => window.cancelAnimationFrame(frame);
@@ -413,42 +433,6 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
                 })}
               </div>
 
-              <div className="flex gap-2 overflow-x-auto pb-1 custom-scrollbar">
-                {professionals.map((professional) => {
-                  const count = selectedDateAppointments.filter((appointment) => appointment.proId === professional.id).length;
-                  const firstAppointment = selectedDateAppointments.find((appointment) => appointment.proId === professional.id);
-
-                  return (
-                    <button
-                      key={professional.id}
-                      type="button"
-                      onClick={() => {
-                        if (!firstAppointment) return;
-                        onOpenModal(ROOMS.find((room) => room.id === firstAppointment.roomId)?.name, professional.name, firstAppointment);
-                      }}
-                      className={cn(
-                        'min-w-[118px] px-3 py-2 rounded-2xl border text-left transition-all shrink-0',
-                        count > 0 ? 'bg-white border-blue-200 shadow-sm' : 'bg-slate-50 border-slate-100 opacity-70',
-                      )}
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center text-white font-black text-[10px]', professional.color)}>
-                          {professional.name[0]}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-[11px] font-black text-slate-900 truncate">{professional.name}</p>
-                          <p className="text-[9px] uppercase font-bold text-slate-400 truncate">{professional.specialty}</p>
-                        </div>
-                      </div>
-                      <div className="mt-2 flex items-center justify-between text-[9px] font-black uppercase tracking-[0.14em]">
-                        <span className={count > 0 ? 'text-blue-600' : 'text-slate-400'}>{count} turnos</span>
-                        <span className="text-slate-400">{professional.status}</span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-
               {visibleAppointments.length === 0 ? (
                 <div className="p-5 rounded-3xl border border-dashed border-slate-200 bg-slate-50 text-center">
                   <p className="text-sm font-bold text-slate-700">No hay turnos para este día</p>
@@ -471,7 +455,7 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
                           <p className="text-[10px] font-black uppercase tracking-[0.18em] mb-1.5">
                             {app.start} - {app.end}
                           </p>
-                          <p className="font-bold text-[13px] truncate leading-tight">{formatLabel(app.patient || app.title)}</p>
+                          <p className="font-bold text-[13px] truncate leading-tight">{getAppointmentName(app)}</p>
                           <p className="mt-1.5 text-[11px] font-semibold uppercase tracking-wide opacity-80 truncate">
                             {getTypeLabel(app.type)}
                           </p>
@@ -595,7 +579,7 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
                                 </span>
                               </div>
 
-                              <p className="text-[12px] font-bold truncate leading-tight mt-1">{formatLabel(app.patient || app.title)}</p>
+                              <p className="text-[12px] font-bold truncate leading-tight mt-1">{getAppointmentName(app)}</p>
                               <p className="text-[10px] font-medium truncate opacity-80 mt-0.5">
                                 {getTypeLabel(app.type)} - {getCorrespondsToLabel(app)}
                               </p>
@@ -680,8 +664,8 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
                             )}
                           >
                             <div className="flex items-center justify-between gap-2">
-                              <span className="truncate">
-                                {formatTimeOnly(app.start)} {formatLabel(app.patient || app.title)}
+                            <span className="truncate">
+                                {formatTimeOnly(app.start)} {getAppointmentName(app)}
                               </span>
                               <span className="shrink-0 opacity-70">{getCoverageLabel(app)}</span>
                             </div>
