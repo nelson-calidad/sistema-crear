@@ -30,8 +30,9 @@ import {
 import { motion } from 'motion/react';
 import { cn } from '../lib/utils';
 import { AppointmentRecord } from '../types';
-import { PROFESSIONALS, ROOMS } from '../constants';
+import { ROOMS } from '../constants';
 import { buildDailyPdfHtml, buildMonthlyPdfHtml, openPrintableReport } from '../lib/appointmentPdf';
+import { useProfessionals } from '../lib/professionalsStore';
 
 const HOURS = Array.from({ length: 14 }, (_, i) => 8 + i);
 const UNASSIGNED_COLUMN = { id: 'unassigned', name: 'Sin asignar', color: 'bg-slate-400' };
@@ -108,16 +109,6 @@ const formatTimeOnly = (value?: string) => {
   return String(value).slice(0, 5);
 };
 
-const getCorrespondsToLabel = (appointment: AppointmentRecord) => {
-  const pro = PROFESSIONALS.find((p) => p.id === appointment.proId);
-  const room = ROOMS.find((r) => r.id === appointment.roomId);
-
-  if (pro && room) return `${pro.name} · ${room.name}`;
-  if (pro) return pro.name;
-  if (room) return room.name;
-  return 'Sin asignar';
-};
-
 const getCoverageLabel = (appointment: AppointmentRecord) => appointment.coverageType || 'particular';
 
 const hasAssignment = (appointment: AppointmentRecord) => Boolean(appointment.proId || appointment.roomId);
@@ -127,6 +118,19 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
   const [viewMode, setViewMode] = useState<'professionals' | 'rooms'>('professionals');
   const [timeMode, setTimeMode] = useState<'daily' | 'monthly'>('daily');
   const hasSyncedInitialDateRef = useRef(false);
+  const [professionals] = useProfessionals();
+
+  const getCorrespondsToLabel = (appointment: AppointmentRecord) => {
+    const pro = professionals.find((p) => p.id === appointment.proId);
+    const room = ROOMS.find((r) => r.id === appointment.roomId);
+
+    if (pro && room) return `${pro.name} · ${room.name}`;
+    if (pro) return pro.name;
+    if (room) return room.name;
+    return 'Sin asignar';
+  };
+
+  const getProfessionalName = (id?: string) => professionals.find((professional) => professional.id === id)?.name || 'Sin asignar';
 
   useEffect(() => {
     if (!focusDate) return;
@@ -176,7 +180,7 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
 
   const columns: CalendarColumn[] = useMemo(() => {
     const base = viewMode === 'professionals'
-      ? PROFESSIONALS.map((pro) => ({ id: pro.id, name: pro.name, color: pro.color }))
+      ? professionals.map((pro) => ({ id: pro.id, name: pro.name, color: pro.color }))
       : ROOMS.map((room) => ({ id: room.id, name: room.name }));
 
     const hasUnassigned = selectedDateAppointments.some((app) => !hasAssignment(app));
@@ -184,7 +188,6 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
   }, [selectedDateAppointments, viewMode]);
 
   const visibleAppointments = sortByStart(selectedDateAppointments);
-
   const getPositionFromTime = (timeStr: string) => {
     const [h, m] = timeStr.split(':').map(Number);
     const minutesSinceStart = (h - 8) * 60 + m;
@@ -348,6 +351,85 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
         {timeMode === 'daily' ? (
           <>
             <div className="md:hidden p-3 pb-4 space-y-3 overflow-y-auto custom-scrollbar">
+              <div className="flex gap-2 overflow-x-auto pb-1 custom-scrollbar">
+                {professionals.map((professional) => {
+                  const count = selectedDateAppointments.filter((appointment) => appointment.proId === professional.id).length;
+                  const isActive = count > 0;
+
+                  return (
+                    <button
+                      key={professional.id}
+                      type="button"
+                      onClick={() => {
+                        if (count === 0) return;
+                        const first = selectedDateAppointments.find((appointment) => appointment.proId === professional.id);
+                        if (first) {
+                          onOpenModal(
+                            ROOMS.find((room) => room.id === first.roomId)?.name,
+                            professional.name,
+                            first,
+                          );
+                        }
+                      }}
+                      className={cn(
+                        'min-w-[118px] px-3 py-2 rounded-2xl border text-left transition-all shrink-0',
+                        isActive ? 'bg-white border-blue-200 shadow-sm' : 'bg-slate-50 border-slate-100 opacity-70',
+                      )}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center text-white font-black text-[10px]', professional.color)}>
+                          {professional.name[0]}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[11px] font-black text-slate-900 truncate">{professional.name}</p>
+                          <p className="text-[9px] uppercase font-bold text-slate-400 truncate">{professional.specialty}</p>
+                        </div>
+                      </div>
+                      <div className="mt-2 flex items-center justify-between text-[9px] font-black uppercase tracking-[0.14em]">
+                        <span className={isActive ? 'text-blue-600' : 'text-slate-400'}>{count} turnos</span>
+                        <span className="text-slate-400">{professional.status}</span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="flex gap-2 overflow-x-auto pb-1 custom-scrollbar">
+                {professionals.map((professional) => {
+                  const count = selectedDateAppointments.filter((appointment) => appointment.proId === professional.id).length;
+                  const firstAppointment = selectedDateAppointments.find((appointment) => appointment.proId === professional.id);
+
+                  return (
+                    <button
+                      key={professional.id}
+                      type="button"
+                      onClick={() => {
+                        if (!firstAppointment) return;
+                        onOpenModal(ROOMS.find((room) => room.id === firstAppointment.roomId)?.name, professional.name, firstAppointment);
+                      }}
+                      className={cn(
+                        'min-w-[118px] px-3 py-2 rounded-2xl border text-left transition-all shrink-0',
+                        count > 0 ? 'bg-white border-blue-200 shadow-sm' : 'bg-slate-50 border-slate-100 opacity-70',
+                      )}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center text-white font-black text-[10px]', professional.color)}>
+                          {professional.name[0]}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[11px] font-black text-slate-900 truncate">{professional.name}</p>
+                          <p className="text-[9px] uppercase font-bold text-slate-400 truncate">{professional.specialty}</p>
+                        </div>
+                      </div>
+                      <div className="mt-2 flex items-center justify-between text-[9px] font-black uppercase tracking-[0.14em]">
+                        <span className={count > 0 ? 'text-blue-600' : 'text-slate-400'}>{count} turnos</span>
+                        <span className="text-slate-400">{professional.status}</span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
               {visibleAppointments.length === 0 ? (
                 <div className="p-5 rounded-3xl border border-dashed border-slate-200 bg-slate-50 text-center">
                   <p className="text-sm font-bold text-slate-700">No hay turnos para este día</p>
@@ -355,7 +437,7 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
                 </div>
               ) : (
                 visibleAppointments.map((app) => {
-                  const pro = PROFESSIONALS.find((p) => p.id === app.proId);
+                  const pro = professionals.find((p) => p.id === app.proId);
                   const room = ROOMS.find((r) => r.id === app.roomId);
 
                   return (
@@ -464,7 +546,7 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
                         ) : null}
 
                         {columnAppointments.map((app) => {
-                          const pro = PROFESSIONALS.find((p) => p.id === app.proId);
+                  const pro = professionals.find((p) => p.id === app.proId);
                           const room = ROOMS.find((r) => r.id === app.roomId);
 
                           return (
@@ -568,7 +650,7 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
 
                     <div className="space-y-1">
                       {dayAppointments.slice(0, 2).map((app) => {
-                        const pro = PROFESSIONALS.find((p) => p.id === app.proId);
+                        const pro = professionals.find((p) => p.id === app.proId);
                         const room = ROOMS.find((r) => r.id === app.roomId);
                         return (
                           <div

@@ -1,6 +1,7 @@
 import { format, isSameDay } from 'date-fns';
 import { AppointmentRecord } from '../types';
-import { PROFESSIONALS, ROOMS } from '../constants';
+import { ROOMS } from '../constants';
+import { getProfessionalsSnapshot, ProfessionalRecord } from './professionalsStore';
 
 const parseDay = (value?: string | Date | null) => {
   if (!value) return null;
@@ -58,8 +59,8 @@ const getTypeLabel = (type?: string) => {
 
 const getCoverageLabel = (appointment: AppointmentRecord) => appointment.coverageType || 'particular';
 
-const getCorrespondsToLabel = (appointment: AppointmentRecord) => {
-  const pro = PROFESSIONALS.find((p) => p.id === appointment.proId);
+const getCorrespondsToLabel = (appointment: AppointmentRecord, professionals: ProfessionalRecord[]) => {
+  const pro = professionals.find((p) => p.id === appointment.proId);
   const room = ROOMS.find((r) => r.id === appointment.roomId);
 
   if (pro && room) return `${pro.name} · ${room.name}`;
@@ -274,6 +275,7 @@ const openPrintWindow = (title: string, html: string) => {
 };
 
 export const buildDailyPdfHtml = (selectedDate: Date, appointments: AppointmentRecord[]) => {
+  const professionals = getProfessionalsSnapshot();
   const dateLabel = format(selectedDate, 'EEEE, d MMMM yyyy');
   const sorted = sortByStart(appointments.filter((appointment) => {
     const appointmentDate = parseDay(appointment.date);
@@ -286,7 +288,7 @@ export const buildDailyPdfHtml = (selectedDate: Date, appointments: AppointmentR
     ? sorted.map((appointment) => `
       <tr>
         <td><strong>${escapeHtml(formatTimeOnly(appointment.start))}</strong><div class="subtle">${escapeHtml(formatTimeOnly(appointment.end))}</div></td>
-        <td><strong>${escapeHtml(appointment.patient || appointment.title || 'Sin título')}</strong><div class="subtle">${escapeHtml(getCorrespondsToLabel(appointment))}</div></td>
+        <td><strong>${escapeHtml(appointment.patient || appointment.title || 'Sin título')}</strong><div class="subtle">${escapeHtml(getCorrespondsToLabel(appointment, professionals))}</div></td>
         <td><span class="badge ${appointment.type}">${escapeHtml(getTypeLabel(appointment.type))}</span></td>
         <td><span class="badge coverage">${escapeHtml(getCoverageLabel(appointment))}</span></td>
         <td>${escapeHtml(appointment.notes || '-')}</td>
@@ -339,6 +341,7 @@ export const buildDailyPdfHtml = (selectedDate: Date, appointments: AppointmentR
 };
 
 export const buildMonthlyPdfHtml = (selectedDate: Date, appointments: AppointmentRecord[]) => {
+  const professionals = getProfessionalsSnapshot();
   const monthLabel = format(selectedDate, 'MMMM yyyy');
   const monthAppointments = appointments.filter((appointment) => {
     const appointmentDate = parseDay(appointment.date);
@@ -376,7 +379,7 @@ export const buildMonthlyPdfHtml = (selectedDate: Date, appointments: Appointmen
                 <div class="appointment-item">
                   <div>
                     <div class="time">${escapeHtml(formatTimeOnly(appointment.start))} - ${escapeHtml(formatTimeOnly(appointment.end))}</div>
-                    <div class="subtle">${escapeHtml(getCorrespondsToLabel(appointment))}</div>
+                    <div class="subtle">${escapeHtml(getCorrespondsToLabel(appointment, professionals))}</div>
                   </div>
                   <div>
                     <div><strong>${escapeHtml(appointment.patient || appointment.title || 'Sin título')}</strong></div>

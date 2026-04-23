@@ -17,8 +17,9 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 
-import { PROFESSIONALS, ROOMS } from '../constants';
+import { ROOMS } from '../constants';
 import { AppointmentRecord } from '../types';
+import { useProfessionals } from '../lib/professionalsStore';
 
 interface ReservationModalProps {
   isOpen: boolean;
@@ -71,6 +72,7 @@ const overlaps = (startA: string, endA: string, startB: string, endB: string) =>
 };
 
 export const ReservationModal = ({ isOpen, onClose, room, professional, appointments = [], initialData, onSave, onDelete }: ReservationModalProps) => {
+  const [professionals] = useProfessionals();
   const [type, setType] = useState<'session' | 'interview' | 'survey'>(initialData?.type || 'session');
   const [coverageType, setCoverageType] = useState<'obra social' | 'particular'>(initialData?.coverageType || 'particular');
   const [recurrence, setRecurrence] = useState<'none' | 'daily' | 'weekly' | 'weekdays'>('none');
@@ -108,7 +110,7 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
   }, [type, initialData, formData.startTime]);
 
   // Filter ONLY active professionals as requested
-  const activeProfessionals = PROFESSIONALS.filter(p => p.status === 'Activo');
+  const activeProfessionals = professionals.filter((p) => p.status === 'Activo');
 
   // Update selection/form if initialData or props change
   useEffect(() => {
@@ -135,7 +137,7 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
         }));
         setCoverageType('particular');
         if (professional) {
-          const pro = PROFESSIONALS.find(p => p.name === professional);
+          const pro = professionals.find((p) => p.name === professional);
           if (pro) setSelectedProId(pro.id);
         } else {
           setSelectedProId('');
@@ -148,7 +150,7 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
         }
       }
     }
-  }, [isOpen, initialData, professional, room]);
+  }, [isOpen, initialData, professional, room, professionals]);
 
   if (!isOpen) return null;
 
