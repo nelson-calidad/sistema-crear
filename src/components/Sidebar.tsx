@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
-import logoCrear from '../assets/logo-crear.jpeg';
+import logoCrear from '../assets/logo-crear.png';
 
 interface SidebarItemProps {
   key?: string;
@@ -98,22 +98,12 @@ export const Sidebar = ({ activeTab, setActiveTab, mobileOpen, onCloseMobile }: 
         )}
       >
         <div className="p-6 flex items-center mb-4">
-          <div className="w-12 h-12 rounded-2xl overflow-hidden bg-white border border-[#e8dfd6] shadow-md shadow-slate-200/40 ring-1 ring-white/60">
+          <div className={cn(
+            'overflow-hidden bg-white border border-[#e8dfd6] shadow-md shadow-slate-200/40 ring-1 ring-white/60',
+            isCollapsed ? 'w-14 h-14 rounded-2xl' : 'w-20 h-20 rounded-[1.4rem]'
+          )}>
             <img src={logoCrear} alt="Logo CREAR" className="w-full h-full object-cover" />
           </div>
-          {!isCollapsed && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="ml-3 font-black text-slate-900 text-lg leading-tight"
-            >
-              <span className="text-cyan-700">CREAR</span>
-              <br />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-                Espacio terapéutico
-              </span>
-            </motion.div>
-          )}
         </div>
 
         <nav className="flex-1 px-4 space-y-2">

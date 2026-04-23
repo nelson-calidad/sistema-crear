@@ -15,7 +15,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useEffect, useRef } from 'react';
 import { ReservationModal } from './components/ReservationModal';
 import { deleteAppointment, getBackendLabel, getSessionUser, saveAppointment, subscribeToAppointments } from './lib/appointmentsStore';
-import logoCrear from './assets/logo-crear.jpeg';
+import logoCrear from './assets/logo-crear.png';
 
 type ToastTone = 'success' | 'error' | 'info';
 
@@ -113,7 +113,7 @@ export default function App() {
               className="w-11 h-11 rounded-xl bg-white border border-slate-100 overflow-hidden shadow-sm flex items-center justify-center"
               aria-label="Abrir menú"
             >
-              {mobileSidebarOpen ? <X className="w-5 h-5 text-slate-900" /> : <img src={logoCrear} alt="CREAR" className="w-full h-full object-cover" />}
+              {mobileSidebarOpen ? <X className="w-5 h-5 text-slate-900" /> : <img src={logoCrear} alt="CREAR" className="w-full h-full object-cover p-0.5" />}
             </button>
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">CREAR</p>
