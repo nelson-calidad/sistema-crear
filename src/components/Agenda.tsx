@@ -118,6 +118,7 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
   const [viewMode, setViewMode] = useState<'professionals' | 'rooms'>('professionals');
   const [timeMode, setTimeMode] = useState<'daily' | 'monthly'>('daily');
   const hasSyncedInitialDateRef = useRef(false);
+  const dailyTimelineRef = useRef<HTMLDivElement | null>(null);
   const [professionals] = useProfessionals();
 
   const getCorrespondsToLabel = (appointment: AppointmentRecord) => {
@@ -129,8 +130,6 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
     if (room) return room.name;
     return 'Sin asignar';
   };
-
-  const getProfessionalName = (id?: string) => professionals.find((professional) => professional.id === id)?.name || 'Sin asignar';
 
   useEffect(() => {
     if (!focusDate) return;
@@ -161,6 +160,26 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
     setTimeMode('daily');
     hasSyncedInitialDateRef.current = true;
   }, [appointments]);
+
+  useEffect(() => {
+    if (timeMode !== 'daily') {
+      return;
+    }
+
+    const container = dailyTimelineRef.current;
+    if (!container) {
+      return;
+    }
+
+    const firstAppointment = selectedDateAppointments[0];
+    const targetTop = firstAppointment ? Math.max(getPositionFromTime(firstAppointment.start) - 120, 0) : 0;
+
+    const frame = window.requestAnimationFrame(() => {
+      container.scrollTo({ top: targetTop, behavior: 'smooth' });
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [selectedDateAppointments, timeMode]);
 
   const selectedDateAppointments = useMemo(() => {
     return sortByStart(
@@ -506,7 +525,7 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto relative custom-scrollbar">
+            <div ref={dailyTimelineRef} className="flex-1 overflow-y-auto relative custom-scrollbar">
               <div className="hidden md:flex min-h-[1300px]">
                 <div className="w-16 border-r border-slate-100 bg-slate-50/20 sticky left-0 z-20 backdrop-blur-sm">
                   {HOURS.map((hour) => (
