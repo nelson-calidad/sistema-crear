@@ -25,7 +25,6 @@ import {
   Calendar as CalendarIcon,
   Users,
   MapPin,
-  BadgeInfo,
   Printer,
   RefreshCw,
 } from 'lucide-react';
@@ -439,33 +438,6 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-1 md:gap-1.5 lg:hidden">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100/90 text-slate-600 text-[8px] font-bold border border-slate-200/70">
-              <BadgeInfo className="w-3 h-3" />
-              {titleCase(formatDateEs(selectedDate, 'EEEE, d MMMM'))}
-            </span>
-            <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50/90 text-blue-700 text-[8px] font-bold border border-blue-100">
-              {selectedDateAppointments.length} turno{selectedDateAppointments.length === 1 ? '' : 's'} en el día
-            </span>
-            <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50/90 text-emerald-700 text-[8px] font-bold border border-emerald-100">
-              {currentMonthAppointments.length} turno{currentMonthAppointments.length === 1 ? '' : 's'} en el mes
-            </span>
-          </div>
-        </div>
-
-        <div className="hidden lg:flex flex-col items-end gap-2 shrink-0 pt-1 max-w-full min-w-0">
-          <div className="flex flex-wrap justify-end items-center gap-1.5">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100/90 text-slate-700 text-[8px] font-bold border border-slate-200/70">
-              <BadgeInfo className="w-3 h-3" />
-              {titleCase(formatDateEs(selectedDate, 'EEEE, d MMMM'))}
-            </span>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50/90 text-blue-700 text-[8px] font-bold border border-blue-100">
-              {selectedDateAppointments.length} turno{selectedDateAppointments.length === 1 ? '' : 's'} en el día
-            </span>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50/90 text-emerald-700 text-[8px] font-bold border border-emerald-100">
-              {currentMonthAppointments.length} turno{currentMonthAppointments.length === 1 ? '' : 's'} en el mes
-            </span>
-          </div>
         </div>
 
         <div className="flex w-full flex-col gap-2 lg:w-auto lg:items-end">
