@@ -66,7 +66,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex h-[100dvh] bg-slate-50 font-sans text-slate-900 antialiased overflow-hidden">
+    <div className="premium-theme flex h-[100dvh] bg-slate-50 font-sans text-slate-900 antialiased overflow-hidden">
       <Sidebar
         activeTab={activeTab}
         setActiveTab={(tab) => {
