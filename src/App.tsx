@@ -32,6 +32,7 @@ export default function App() {
   const [user] = useState(() => getSessionUser());
   const [appointments, setAppointments] = useState<any[]>([]);
   const [agendaFocusDate, setAgendaFocusDate] = useState<string | null>(null);
+  const [modalAction, setModalAction] = useState<'save' | 'delete' | null>(null);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const toastTimers = useRef<number[]>([]);
   const syncErrorShown = useRef(false);
@@ -206,6 +207,7 @@ export default function App() {
             pushToast('error', 'Sesión requerida', 'Inicia sesión para guardar cambios en la agenda.');
             return;
           }
+          setModalAction('save');
           try {
             const patientName = data.patient?.trim();
             const appointmentData = {
@@ -231,9 +233,12 @@ export default function App() {
           } catch (error) {
             console.error("Error saving appointment", error);
             pushToast('error', 'No se pudo guardar', 'Verificá tu conexión o permisos e intentá de nuevo.');
+          } finally {
+            setModalAction(null);
           }
         }}
         onDelete={async (id) => {
+          setModalAction('delete');
           try {
             await deleteAppointment(id);
             setIsModalOpen(false);
@@ -241,8 +246,12 @@ export default function App() {
           } catch (error) {
             console.error("Error deleting appointment", error);
             pushToast('error', 'No se pudo borrar', 'Intentá de nuevo en unos segundos.');
+          } finally {
+            setModalAction(null);
           }
         }}
+        isSaving={modalAction === 'save'}
+        isDeleting={modalAction === 'delete'}
       />
 
       <div className="fixed right-4 top-4 z-[60] flex w-[min(92vw,360px)] flex-col gap-3 pointer-events-none">

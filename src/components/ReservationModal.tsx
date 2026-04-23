@@ -12,7 +12,8 @@ import {
   DoorOpen, 
   FileText, 
   AlertCircle,
-  Trash2
+  Trash2,
+  Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
@@ -30,6 +31,8 @@ interface ReservationModalProps {
   initialData?: any;
   onSave: (data: any) => void;
   onDelete?: (id: string) => void;
+  isSaving?: boolean;
+  isDeleting?: boolean;
 }
 
 const parseDay = (value?: string | Date | null) => {
@@ -79,7 +82,7 @@ const overlaps = (startA: string, endA: string, startB: string, endB: string) =>
   return aStart < bEnd && aEnd > bStart;
 };
 
-export const ReservationModal = ({ isOpen, onClose, room, professional, appointments = [], initialData, onSave, onDelete }: ReservationModalProps) => {
+export const ReservationModal = ({ isOpen, onClose, room, professional, appointments = [], initialData, onSave, onDelete, isSaving = false, isDeleting = false }: ReservationModalProps) => {
   const [professionals] = useProfessionals();
   const [type, setType] = useState<'session' | 'interview' | 'survey'>(initialData?.type || 'session');
   const [coverageType, setCoverageType] = useState<'obra social' | 'particular'>(initialData?.coverageType || 'particular');
@@ -202,6 +205,10 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
   const selectedRoomBusy = selectedRoomId ? isRoomBusy(selectedRoomId) : false;
 
   const handleSave = () => {
+    if (isSaving || isDeleting) {
+      return;
+    }
+
     if (selectedProfessionalBusy || selectedRoomBusy) {
       alert('Ese colaborador o consultorio ya está ocupado en ese horario. Elegí otro.');
       return;
@@ -231,7 +238,10 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          onClick={onClose}
+          onClick={() => {
+            if (isSaving || isDeleting) return;
+            onClose();
+          }}
           className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" 
         />
         
@@ -254,14 +264,18 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
             <div className="flex items-center gap-2">
               {isEditing && onDelete && (
                 <button 
-                  onClick={() => onDelete(initialData.id)}
-                  className="p-2 text-rose-500 hover:bg-rose-50 rounded-full transition-colors"
+                  onClick={() => {
+                    if (isSaving || isDeleting) return;
+                    onDelete(initialData.id);
+                  }}
+                  disabled={isSaving || isDeleting}
+                  className="p-2 text-rose-500 hover:bg-rose-50 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Eliminar Reservación"
                 >
-                  <Trash2 className="w-5 h-5" />
+                  {isDeleting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
                 </button>
               )}
-              <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors group">
+              <button onClick={onClose} disabled={isSaving || isDeleting} className="p-2 hover:bg-slate-100 rounded-full transition-colors group disabled:opacity-50 disabled:cursor-not-allowed">
                 <X className="w-5 h-5 text-slate-400 group-hover:text-slate-900" />
               </button>
             </div>
@@ -466,21 +480,34 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
           <div className="p-4 md:p-6 bg-slate-50 border-t border-slate-100 flex flex-col-reverse sm:flex-row gap-3 sm:gap-4">
             <button 
               onClick={onClose}
-              className="flex-1 py-3 bg-white border border-slate-200 text-slate-700 rounded-2xl font-bold text-sm hover:bg-slate-100 transition-colors"
+              disabled={isSaving || isDeleting}
+              className="flex-1 py-3 bg-white border border-slate-200 text-slate-700 rounded-2xl font-bold text-sm hover:bg-slate-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancelar
             </button>
             <button
               onClick={handleSave}
-              disabled={selectedProfessionalBusy || selectedRoomBusy}
+              disabled={selectedProfessionalBusy || selectedRoomBusy || isSaving || isDeleting}
               className={cn(
                 'flex-[2] py-3 rounded-2xl font-bold text-sm transition-colors shadow-lg',
-                selectedProfessionalBusy || selectedRoomBusy
+                selectedProfessionalBusy || selectedRoomBusy || isSaving || isDeleting
                   ? 'bg-rose-100 text-rose-400 cursor-not-allowed shadow-none'
                   : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200',
               )}
             >
-              Confirmar Reservación
+              {isSaving ? (
+                <span className="inline-flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Guardando...
+                </span>
+              ) : isDeleting ? (
+                <span className="inline-flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Eliminando...
+                </span>
+              ) : (
+                'Confirmar Reservaci�n'
+              )}
             </button>
           </div>
         </motion.div>
@@ -488,3 +515,4 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
     </AnimatePresence>
   );
 };
+
