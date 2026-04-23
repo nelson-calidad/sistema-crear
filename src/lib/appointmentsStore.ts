@@ -125,25 +125,32 @@ const readRemoteAppointments = async (): Promise<AppointmentRecord[]> => {
     return readLocalAppointments();
   }
 
-  const response = await fetch(SHEET_ENDPOINT, {
-    method: 'GET',
-    headers: {
-      Accept: 'application/json',
-    },
-  });
+  try {
+    const response = await fetch(SHEET_ENDPOINT, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+      },
+    });
 
-  if (!response.ok) {
-    throw new Error(`No se pudieron leer los datos del sheet (${response.status})`);
+    if (!response.ok) {
+      throw new Error(`No se pudieron leer los datos del sheet (${response.status})`);
+    }
+
+    const payload = await response.json();
+    const rawAppointments = Array.isArray(payload)
+      ? payload
+      : Array.isArray(payload?.appointments)
+        ? payload.appointments
+        : [];
+
+    const normalized = rawAppointments.map((item) => normalizeAppointment(item));
+    writeLocalAppointments(normalized);
+    return normalized;
+  } catch (error) {
+    console.warn('Leyendo desde el cache local porque falló el Sheet.', error);
+    return readLocalAppointments();
   }
-
-  const payload = await response.json();
-  const rawAppointments = Array.isArray(payload)
-    ? payload
-    : Array.isArray(payload?.appointments)
-      ? payload.appointments
-      : [];
-
-  return rawAppointments.map((item) => normalizeAppointment(item));
 };
 
 const broadcast = async () => {
@@ -256,7 +263,9 @@ const persistRemoteAppointment = async (appointment: AppointmentRecord, id?: str
     throw new Error(`No se pudo guardar el turno (${response.status})`);
   }
 
-  emitAppointments(upsertCachedAppointment(appointment, id));
+  const nextAppointments = upsertCachedAppointment(appointment, id);
+  writeLocalAppointments(nextAppointments);
+  emitAppointments(nextAppointments);
 
   void broadcast().catch((error) => {
     console.warn('No se pudo refrescar la agenda remota luego de guardar.', error);
@@ -285,7 +294,9 @@ const deleteRemoteAppointment = async (id: string) => {
     throw new Error(`No se pudo eliminar el turno (${response.status})`);
   }
 
-  emitAppointments(deleteCachedAppointment(id));
+  const nextAppointments = deleteCachedAppointment(id);
+  writeLocalAppointments(nextAppointments);
+  emitAppointments(nextAppointments);
 
   void broadcast().catch((error) => {
     console.warn('No se pudo refrescar la agenda remota luego de eliminar.', error);
