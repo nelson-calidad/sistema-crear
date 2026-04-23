@@ -246,7 +246,7 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
               <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-300">
                 {isEditing ? 'Editar registro' : 'Nuevo registro'}
               </p>
-              <h2 className="mt-1 text-xl font-black text-white">{isEditing ? 'Editar registro' : 'Nuevo registro'}</h2>
+              <h2 className="mt-1 text-xl font-black text-white">{isEditing ? 'Editar bloque' : 'Crear bloque'}</h2>
               <p className="text-xs text-slate-300 font-medium tracking-tight">
                 {isEditing ? 'Modifica los parámetros del bloque horario.' : 'Completa los detalles para bloquear el espacio.'}
               </p>
@@ -273,7 +273,7 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
               {[
                 { id: 'session', label: 'Sesión', icon: User },
                 { id: 'interview', label: 'Entrevista', icon: FileText },
-                { id: 'survey', label: 'Encuesta', icon: AlertCircle },
+                { id: 'survey', label: 'Otros', icon: AlertCircle },
               ].map((t) => (
                 <button
                   key={t.id}

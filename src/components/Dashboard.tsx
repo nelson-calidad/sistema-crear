@@ -26,6 +26,8 @@ import {
   Cell
 } from 'recharts';
 import { motion } from 'motion/react';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 const data = [
   { name: 'Ene', ingresos: 4000, gastos: 2400 },
@@ -63,12 +65,14 @@ const StatCard = ({ title, value, change, icon: Icon, color, trend }: any) => (
 );
 
 export const Dashboard = ({ onQuickReserve }: { onQuickReserve?: () => void }) => {
+  const todayLabel = format(new Date(), "d 'de' MMMM yyyy", { locale: es });
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <header>
           <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Resumen Administrativo</h1>
-          <p className="text-slate-500 font-medium">Estado de Neurometric LAB al {new Date().toLocaleDateString()}</p>
+          <p className="text-slate-500 font-medium">Estado de Neurometric LAB al {todayLabel}</p>
         </header>
         <button 
           onClick={onQuickReserve}

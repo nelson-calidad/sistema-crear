@@ -16,6 +16,7 @@ import {
   eachDayOfInterval,
   isSameMonth,
 } from 'date-fns';
+import { es } from 'date-fns/locale';
 import {
   ChevronLeft,
   ChevronRight,
@@ -90,14 +91,14 @@ const getAppointmentName = (appointment: AppointmentRecord) => {
 
 const getTypeLabel = (type?: string) => {
   if (type === 'interview') return 'Entrevista';
-  if (type === 'survey') return 'Encuesta';
+  if (type === 'survey') return 'Otros';
   return 'Sesión';
 };
 
 const getTypeStyles = (type?: string) => {
-  if (type === 'interview') return 'bg-amber-50 text-amber-900 border-amber-200';
-  if (type === 'survey') return 'bg-slate-900 text-white border-slate-800';
-  return 'bg-blue-50 text-blue-900 border-blue-200';
+  if (type === 'interview') return 'bg-[#2a2413] text-[#fff6df] border-[#7f6a2d]';
+  if (type === 'survey') return 'bg-[#102332] text-[#eaf7ff] border-[#365772]';
+  return 'bg-[#12263e] text-[#edf6ff] border-[#35506f]';
 };
 
 const parseTimeToMinutes = (value?: string) => {
@@ -135,6 +136,11 @@ const formatTimeOnly = (value?: string) => {
 const getCoverageLabel = (appointment: AppointmentRecord) => appointment.coverageType || 'particular';
 
 const hasAssignment = (appointment: AppointmentRecord) => Boolean(appointment.proId || appointment.roomId);
+
+const formatDateEs = (date: Date, pattern: string) =>
+  format(date, pattern, { locale: es });
+
+const titleCase = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
 
 export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -231,12 +237,12 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
 
   const handleDailyPdf = () => {
     const html = buildDailyPdfHtml(selectedDate, appointments);
-    openPrintableReport(`Agenda diaria - ${format(selectedDate, 'dd-MM-yyyy')}`, html);
+    openPrintableReport(`Agenda diaria - ${formatDateEs(selectedDate, 'dd-MM-yyyy')}`, html);
   };
 
   const handleMonthlyPdf = () => {
     const html = buildMonthlyPdfHtml(selectedDate, appointments);
-    openPrintableReport(`Agenda mensual - ${format(selectedDate, 'MMMM yyyy')}`, html);
+    openPrintableReport(`Agenda mensual - ${formatDateEs(selectedDate, 'MMMM yyyy')}`, html);
   };
 
   useEffect(() => {
@@ -282,7 +288,7 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100/90 text-slate-600 text-[9px] font-bold border border-slate-200/70">
               <BadgeInfo className="w-3 h-3" />
-              {format(selectedDate, 'EEEE, d MMMM')}
+              {titleCase(formatDateEs(selectedDate, 'EEEE, d MMMM'))}
             </span>
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50/90 text-blue-700 text-[9px] font-bold border border-blue-100">
               {selectedDateAppointments.length} turno{selectedDateAppointments.length === 1 ? '' : 's'} en el día
@@ -324,7 +330,7 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
                 <ChevronLeft className="w-4 h-4 text-slate-400" />
               </button>
               <div className="px-2.5 py-1.5 font-bold text-slate-700 text-center flex-1 md:min-w-[170px] text-[11px] md:text-sm leading-tight truncate">
-                {format(selectedDate, 'EEEE, d MMMM')}
+                {titleCase(formatDateEs(selectedDate, 'EEEE, d MMMM'))}
               </div>
               <button
                 onClick={() => setSelectedDate(addDays(selectedDate, 1))}
@@ -456,20 +462,13 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
                             {app.start} - {app.end}
                           </p>
                           <p className="font-bold text-[13px] truncate leading-tight">{getAppointmentName(app)}</p>
-                          <p className="mt-1.5 text-[11px] font-semibold uppercase tracking-wide opacity-80 truncate">
-                            {getTypeLabel(app.type)}
-                          </p>
-                          <p className="mt-1.5 text-[11px] opacity-80 truncate">
-                            {getCorrespondsToLabel(app)}
+                          <p className="mt-1.5 text-[11px] font-semibold uppercase tracking-wide opacity-85 truncate">
+                            {getTypeLabel(app.type)} · {getCorrespondsToLabel(app)}
                           </p>
                         </div>
                         <span className="text-[10px] font-black uppercase opacity-75 shrink-0">
                           {getCoverageLabel(app)}
                         </span>
-                      </div>
-                      <div className="mt-2 flex items-center justify-between text-[9px] font-bold uppercase opacity-70">
-                        <span>{getCoverageLabel(app)}</span>
-                        <span>{getCorrespondsToLabel(app)}</span>
                       </div>
                     </button>
                   );
@@ -496,10 +495,10 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
                         {col.name[0]}
                       </div>
                     ) : (
-                      <div className="w-9 h-9 rounded-xl mx-auto mb-1.5 flex items-center justify-center bg-white text-slate-900 border border-slate-200 font-bold shadow-sm text-xs">
-                        {col.name === 'Sin asignar' ? '—' : col.name}
-                      </div>
-                    )}
+                        <div className="w-9 h-9 rounded-xl mx-auto mb-1.5 flex items-center justify-center bg-white text-slate-900 border border-slate-200 font-bold shadow-sm text-xs">
+                          {col.name === 'Sin asignar' ? '—' : col.name}
+                        </div>
+                      )}
                     <p className="text-[10px] font-bold text-slate-900 uppercase tracking-wider leading-tight">{col.name}</p>
                     {viewMode === 'rooms' && col.id !== 'unassigned' && (
                       <p className="text-[9px] text-slate-400 uppercase font-medium mt-0.5">Capacidad 1</p>
@@ -571,8 +570,8 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
                               )}
                             >
                               <div className="flex items-center justify-between gap-2">
-                                <span className="text-[8px] font-black tracking-[0.18em] uppercase px-1.5 py-0.5 rounded-full bg-white/75 border border-white/60">
-                                  {formatTimeOnly(app.start)}
+                                <span className="text-[8px] font-black tracking-[0.18em] uppercase px-1.5 py-0.5 rounded-full bg-white/80 text-slate-900 border border-white/80">
+                                  {formatTimeOnly(app.start)} - {formatTimeOnly(app.end)}
                                 </span>
                                 <span className="text-[8px] font-black tracking-widest uppercase opacity-75">
                                   {getCoverageLabel(app)}
@@ -580,14 +579,9 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
                               </div>
 
                               <p className="text-[12px] font-bold truncate leading-tight mt-1">{getAppointmentName(app)}</p>
-                              <p className="text-[10px] font-medium truncate opacity-80 mt-0.5">
-                                {getTypeLabel(app.type)} - {getCorrespondsToLabel(app)}
+                              <p className="text-[10px] font-medium truncate opacity-85 mt-0.5">
+                                {getTypeLabel(app.type)} · {getCorrespondsToLabel(app)}
                               </p>
-
-                              <div className="mt-1.5 flex items-center justify-between gap-1 text-[8px] font-bold uppercase tracking-wide opacity-75">
-                                <span className="truncate">{getCoverageLabel(app)}</span>
-                                <span className="shrink-0">{formatTimeOnly(app.end)}</span>
-                              </div>
                             </motion.div>
                           );
                         })}
@@ -624,10 +618,10 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
                 return (
                   <div
                     key={day.toISOString()}
-                className={cn(
-                  'min-h-[76px] md:min-h-[140px] bg-white/85 p-1 md:p-2 border-slate-50 transition-colors hover:bg-slate-50/60 cursor-pointer backdrop-blur-sm',
-                  !isSameMonth(day, selectedDate) && 'opacity-30',
-                )}
+                    className={cn(
+                      'min-h-[76px] md:min-h-[140px] bg-white/85 p-1 md:p-2 border-slate-50 transition-colors hover:bg-slate-50/60 cursor-pointer backdrop-blur-sm',
+                      !isSameMonth(day, selectedDate) && 'opacity-30',
+                    )}
                     onClick={() => {
                       setSelectedDate(day);
                       setTimeMode('daily');
@@ -664,9 +658,7 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
                             )}
                           >
                             <div className="flex items-center justify-between gap-2">
-                            <span className="truncate">
-                                {formatTimeOnly(app.start)} {getAppointmentName(app)}
-                              </span>
+                              <span className="truncate">{formatTimeOnly(app.start)} {getAppointmentName(app)}</span>
                               <span className="shrink-0 opacity-70">{getCoverageLabel(app)}</span>
                             </div>
                             <div className="mt-0.5 flex items-center justify-between gap-2 text-[7px] font-bold uppercase opacity-70">

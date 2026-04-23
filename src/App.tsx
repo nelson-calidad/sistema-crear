@@ -45,7 +45,9 @@ export default function App() {
   const handleQuickReserve = () => {
     setActiveTab('agenda');
     setMobileSidebarOpen(false);
-    handleOpenModal();
+    window.requestAnimationFrame(() => {
+      handleOpenModal();
+    });
   };
 
   const renderContent = () => {
@@ -168,7 +170,7 @@ export default function App() {
               start: data.startTime,
               end: data.endTime,
               patient: patientName || undefined,
-              title: patientName || data.title || (data.type === 'survey' ? 'Encuesta' : 'Nueva Reserva'),
+              title: patientName || data.title || (data.type === 'survey' ? 'Otros' : 'Nueva Reserva'),
               createdBy: user.uid
             };
             await saveAppointment(appointmentData, modalContext.appointment?.id);

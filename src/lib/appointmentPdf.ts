@@ -1,4 +1,5 @@
 import { format, isSameDay } from 'date-fns';
+import { es } from 'date-fns/locale';
 import { AppointmentRecord } from '../types';
 import { ROOMS } from '../constants';
 import { getProfessionalsSnapshot, ProfessionalRecord } from './professionalsStore';
@@ -63,7 +64,7 @@ const getAppointmentName = (appointment: AppointmentRecord) => {
 
 const getTypeLabel = (type?: string) => {
   if (type === 'interview') return 'Entrevista';
-  if (type === 'survey') return 'Encuesta';
+  if (type === 'survey') return 'Otros';
   return 'Sesion';
 };
 
@@ -112,7 +113,7 @@ const getStats = (appointments: AppointmentRecord[]) => {
       acc[key] = (acc[key] || 0) + 1;
       return acc;
     },
-    { Sesion: 0, Entrevista: 0, Encuesta: 0 } as Record<string, number>,
+    { Sesion: 0, Entrevista: 0, Otros: 0 } as Record<string, number>,
   );
 
   return { coverage, types };
@@ -309,13 +310,13 @@ const openPrintWindow = (title: string, html: string) => {
 
 export const buildDailyPdfHtml = (selectedDate: Date, appointments: AppointmentRecord[]) => {
   const professionals = getProfessionalsSnapshot();
-  const dateLabel = format(selectedDate, 'EEEE, d MMMM yyyy');
+  const dateLabel = format(selectedDate, 'EEEE, d MMMM yyyy', { locale: es });
   const sorted = sortByStart(appointments.filter((appointment) => {
     const appointmentDate = parseDay(appointment.date);
     return appointmentDate ? isSameDay(appointmentDate, selectedDate) : false;
   }));
   const { coverage, types } = getStats(sorted);
-  const generatedAt = format(new Date(), 'dd/MM/yyyy HH:mm');
+  const generatedAt = format(new Date(), 'dd/MM/yyyy HH:mm', { locale: es });
 
   const rows = sorted.length
     ? sorted.map((appointment) => `
@@ -347,7 +348,7 @@ export const buildDailyPdfHtml = (selectedDate: Date, appointments: AppointmentR
         <div class="card"><div class="label">Total</div><div class="value">${sorted.length}</div></div>
         <div class="card"><div class="label">Particular</div><div class="value">${coverage.particular || 0}</div></div>
         <div class="card"><div class="label">Obra social</div><div class="value">${coverage['obra social'] || 0}</div></div>
-        <div class="card"><div class="label">Tipos</div><div class="value">${types.Sesion || 0}/${types.Entrevista || 0}/${types.Encuesta || 0}</div></div>
+        <div class="card"><div class="label">Tipos</div><div class="value">${types.Sesion || 0}/${types.Entrevista || 0}/${types.Otros || 0}</div></div>
       </div>
       <div class="section">
         <div class="section-header">
@@ -375,13 +376,13 @@ export const buildDailyPdfHtml = (selectedDate: Date, appointments: AppointmentR
 
 export const buildMonthlyPdfHtml = (selectedDate: Date, appointments: AppointmentRecord[]) => {
   const professionals = getProfessionalsSnapshot();
-  const monthLabel = format(selectedDate, 'MMMM yyyy');
+  const monthLabel = format(selectedDate, 'MMMM yyyy', { locale: es });
   const monthAppointments = appointments.filter((appointment) => {
     const appointmentDate = parseDay(appointment.date);
     return appointmentDate ? appointmentDate.getMonth() === selectedDate.getMonth() && appointmentDate.getFullYear() === selectedDate.getFullYear() : false;
   });
   const { coverage, types } = getStats(monthAppointments);
-  const generatedAt = format(new Date(), 'dd/MM/yyyy HH:mm');
+  const generatedAt = format(new Date(), 'dd/MM/yyyy HH:mm', { locale: es });
 
   const grouped = monthAppointments.reduce<Record<string, AppointmentRecord[]>>((acc, appointment) => {
     const parsed = parseDay(appointment.date);
@@ -402,7 +403,7 @@ export const buildMonthlyPdfHtml = (selectedDate: Date, appointments: Appointmen
           <div class="day-card">
             <div class="day-top">
               <div>
-                <h3>${escapeHtml(format(parsed, 'EEEE, d MMMM'))}</h3>
+                <h3>${escapeHtml(format(parsed, 'EEEE, d MMMM', { locale: es }))}</h3>
                 <p>${dayAppointments.length} turno${dayAppointments.length === 1 ? '' : 's'}</p>
               </div>
               <div class="pill" style="background:#eff6ff;color:#1d4ed8">Dia ${escapeHtml(format(parsed, 'dd/MM'))}</div>
@@ -449,7 +450,7 @@ export const buildMonthlyPdfHtml = (selectedDate: Date, appointments: Appointmen
         <div class="card"><div class="label">Total</div><div class="value">${monthAppointments.length}</div></div>
         <div class="card"><div class="label">Particular</div><div class="value">${coverage.particular || 0}</div></div>
         <div class="card"><div class="label">Obra social</div><div class="value">${coverage['obra social'] || 0}</div></div>
-        <div class="card"><div class="label">Tipos</div><div class="value">${types.Sesion || 0}/${types.Entrevista || 0}/${types.Encuesta || 0}</div></div>
+        <div class="card"><div class="label">Tipos</div><div class="value">${types.Sesion || 0}/${types.Entrevista || 0}/${types.Otros || 0}</div></div>
       </div>
       <div class="section">
         <div class="section-header">
@@ -468,7 +469,7 @@ export const buildMonthlyPdfHtml = (selectedDate: Date, appointments: Appointmen
           <tbody>
             <tr><td>Sesion</td><td>${types.Sesion || 0}</td><td>${coverage.particular || 0}</td><td>${coverage['obra social'] || 0}</td></tr>
             <tr><td>Entrevista</td><td>${types.Entrevista || 0}</td><td colspan="2">Ver detalle diario</td></tr>
-            <tr><td>Encuesta</td><td>${types.Encuesta || 0}</td><td colspan="2">Ver detalle diario</td></tr>
+            <tr><td>Otros</td><td>${types.Otros || 0}</td><td colspan="2">Ver detalle diario</td></tr>
           </tbody>
         </table>
       </div>
