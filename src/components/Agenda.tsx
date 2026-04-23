@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   format,
   isSameDay,
@@ -37,6 +37,7 @@ const UNASSIGNED_COLUMN = { id: 'unassigned', name: 'Sin asignar', color: 'bg-sl
 type AgendaProps = {
   onOpenModal: (room?: string, pro?: string, app?: AppointmentRecord) => void;
   appointments: AppointmentRecord[];
+  focusDate?: string | null;
 };
 
 type CalendarColumn = {
@@ -78,10 +79,20 @@ const getAssignedLabel = (appointment: AppointmentRecord) => {
 
 const hasAssignment = (appointment: AppointmentRecord) => Boolean(appointment.proId || appointment.roomId);
 
-export const Agenda = ({ onOpenModal, appointments }: AgendaProps) => {
+export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<'professionals' | 'rooms'>('professionals');
   const [timeMode, setTimeMode] = useState<'daily' | 'monthly'>('daily');
+
+  useEffect(() => {
+    if (!focusDate) return;
+
+    const parsed = parseDay(focusDate);
+    if (!parsed) return;
+
+    setSelectedDate(parsed);
+    setTimeMode('daily');
+  }, [focusDate]);
 
   const selectedDateAppointments = useMemo(() => {
     return sortByStart(

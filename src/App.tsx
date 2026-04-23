@@ -21,6 +21,7 @@ export default function App() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [user] = useState(() => getSessionUser());
   const [appointments, setAppointments] = useState<any[]>([]);
+  const [agendaFocusDate, setAgendaFocusDate] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribeApps = subscribeToAppointments((apps) => {
@@ -54,7 +55,7 @@ export default function App() {
       case 'professionals':
         return <ProfessionalsGrid />;
       case 'agenda':
-        return <Agenda onOpenModal={handleOpenModal} appointments={appointments} />;
+        return <Agenda onOpenModal={handleOpenModal} appointments={appointments} focusDate={agendaFocusDate} />;
       case 'finance':
         return <Finance />;
       case 'settings':
@@ -166,6 +167,8 @@ export default function App() {
               createdBy: user.uid
             };
             await saveAppointment(appointmentData, modalContext.appointment?.id);
+            setAgendaFocusDate(appointmentData.date);
+            setActiveTab('agenda');
             setIsModalOpen(false);
           } catch (error) {
             console.error("Error saving appointment", error);
