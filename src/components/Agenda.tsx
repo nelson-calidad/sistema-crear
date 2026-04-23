@@ -468,8 +468,9 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
           </div>
         </div>
 
-        <div className="grid w-full gap-1.5 lg:grid-cols-[auto_auto_auto_auto_auto] lg:justify-end lg:justify-items-end">
-          <div className="flex bg-slate-100/80 p-0.5 rounded-xl gap-1 w-full md:w-auto border border-slate-200/70 shrink-0 min-w-0">
+        <div className="flex w-full flex-col gap-2 lg:w-auto lg:items-end">
+          <div className="flex flex-wrap items-center justify-end gap-1.5 w-full">
+            <div className="flex bg-slate-100/80 p-0.5 rounded-xl gap-1 w-full sm:w-auto border border-slate-200/70 shrink-0 min-w-0">
             <button
               onClick={() => setTimeMode('daily')}
               className={cn(
@@ -488,10 +489,10 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
             >
               Mes
             </button>
-          </div>
+            </div>
 
-          {timeMode === 'daily' && (
-            <div className="flex bg-white/80 rounded-xl border border-slate-100 p-1 shadow-sm w-full md:w-auto backdrop-blur-sm shrink-0 min-w-0">
+            {timeMode === 'daily' && (
+              <div className="flex bg-white/80 rounded-xl border border-slate-100 p-1 shadow-sm w-full sm:w-auto backdrop-blur-sm shrink-0 min-w-0">
               <button
                 onClick={() => setSelectedDate(subDays(selectedDate, 1))}
                 className="p-1.5 hover:bg-slate-50 rounded-lg transition-colors shrink-0"
@@ -507,11 +508,11 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
               >
                 <ChevronRight className="w-4 h-4 text-slate-400" />
               </button>
-            </div>
-          )}
+              </div>
+            )}
 
-          {timeMode === 'daily' && (
-            <div className="bg-slate-100/80 p-0.5 rounded-xl flex gap-1 w-full md:w-auto border border-slate-200/70 shrink-0 min-w-0">
+            {timeMode === 'daily' && (
+              <div className="bg-slate-100/80 p-0.5 rounded-xl flex gap-1 w-full sm:w-auto border border-slate-200/70 shrink-0 min-w-0">
               <button
                 onClick={() => setViewMode('professionals')}
                 className={cn(
@@ -532,10 +533,12 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
                 <MapPin className="w-3 h-3 shrink-0" />
                 Consultorios
               </button>
-            </div>
-          )}
+              </div>
+            )}
+          </div>
 
-          <button
+          <div className="flex flex-wrap items-center justify-end gap-1.5 w-full">
+            <button
               onClick={() => onOpenModal()}
               className="inline-flex items-center justify-center gap-2 px-3 md:px-3.5 py-1.5 md:py-2 bg-gradient-to-r from-cyan-500 via-blue-600 to-lavender-500 text-white rounded-xl font-bold text-[10px] hover:brightness-105 transition-colors shadow-lg shadow-blue-200/40 w-full md:w-auto shrink-0 whitespace-nowrap"
             >
@@ -543,33 +546,34 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
               Nuevo Bloque
             </button>
 
-          <button
-            onClick={handleDailyPdf}
-            className="hidden sm:inline-flex items-center justify-center gap-2 px-3 md:px-3.5 py-1.5 md:py-2 bg-white/80 text-slate-700 border border-slate-200 rounded-xl font-bold text-[10px] hover:bg-slate-50 transition-colors shadow-sm w-full md:w-auto backdrop-blur-sm shrink-0 whitespace-nowrap"
+            <button
+              onClick={handleDailyPdf}
+              className="hidden sm:inline-flex items-center justify-center gap-2 px-3 md:px-3.5 py-1.5 md:py-2 bg-white/80 text-slate-700 border border-slate-200 rounded-xl font-bold text-[10px] hover:bg-slate-50 transition-colors shadow-sm w-full md:w-auto backdrop-blur-sm shrink-0 whitespace-nowrap"
             >
               <Printer className="w-3.5 h-3.5 shrink-0" />
               PDF Día
             </button>
 
-          <button
-            onClick={handleMonthlyPdf}
-            className="hidden sm:inline-flex items-center justify-center gap-2 px-3 md:px-3.5 py-1.5 md:py-2 bg-white/80 text-slate-700 border border-slate-200 rounded-xl font-bold text-[10px] hover:bg-slate-50 transition-colors shadow-sm w-full md:w-auto backdrop-blur-sm shrink-0 whitespace-nowrap"
+            <button
+              onClick={handleMonthlyPdf}
+              className="hidden sm:inline-flex items-center justify-center gap-2 px-3 md:px-3.5 py-1.5 md:py-2 bg-white/80 text-slate-700 border border-slate-200 rounded-xl font-bold text-[10px] hover:bg-slate-50 transition-colors shadow-sm w-full md:w-auto backdrop-blur-sm shrink-0 whitespace-nowrap"
             >
               <Printer className="w-3.5 h-3.5 shrink-0" />
               PDF Mes
             </button>
 
-          <button
-            onClick={() => {
-              void forceRefreshAppointments().catch((error) => {
-                console.warn('No se pudo refrescar la agenda manualmente.', error);
-              });
-            }}
-            className="inline-flex items-center justify-center gap-2 px-3 md:px-3.5 py-1.5 md:py-2 bg-white/80 text-slate-700 border border-slate-200 rounded-xl font-bold text-[10px] hover:bg-slate-50 transition-colors shadow-sm w-full md:w-auto backdrop-blur-sm shrink-0 whitespace-nowrap"
+            <button
+              onClick={() => {
+                void forceRefreshAppointments().catch((error) => {
+                  console.warn('No se pudo refrescar la agenda manualmente.', error);
+                });
+              }}
+              className="inline-flex items-center justify-center gap-2 px-3 md:px-3.5 py-1.5 md:py-2 bg-white/80 text-slate-700 border border-slate-200 rounded-xl font-bold text-[10px] hover:bg-slate-50 transition-colors shadow-sm w-full md:w-auto backdrop-blur-sm shrink-0 whitespace-nowrap"
             >
               <RefreshCw className="w-3.5 h-3.5 shrink-0" />
               Refrescar
             </button>
+          </div>
         </div>
       </div>
 
