@@ -210,7 +210,7 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
     }
 
     if (selectedProfessionalBusy || selectedRoomBusy) {
-      alert('Ese colaborador o consultorio ya está ocupado en ese horario. Elegí otro.');
+      alert('Ese colaborador o consultorio ya estÃ¡ ocupado en ese horario. ElegÃ­ otro.');
       return;
     }
 
@@ -233,7 +233,7 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-2 md:p-4">
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -249,16 +249,16 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-lg rounded-3xl overflow-hidden max-h-[92vh] md:max-h-none border border-slate-200 bg-white text-slate-900 shadow-[0_28px_80px_rgba(15,23,42,0.14)] backdrop-blur-2xl ring-1 ring-white/70"
+          className="relative w-full max-w-lg rounded-t-[1.75rem] md:rounded-3xl overflow-hidden max-h-[calc(100svh-0.75rem)] md:max-h-none border border-slate-200 bg-white text-slate-900 shadow-[0_28px_80px_rgba(15,23,42,0.14)] backdrop-blur-2xl ring-1 ring-white/70 flex flex-col"
         >
-          <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-white via-slate-50 to-white text-slate-900">
+          <div className="p-4 md:p-6 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-white via-slate-50 to-white text-slate-900 shrink-0">
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-600">
                 {isEditing ? 'Editar registro' : 'Nuevo registro'}
               </p>
-              <h2 className="mt-1 text-xl font-black text-slate-900">{isEditing ? 'Editar bloque' : 'Crear bloque'}</h2>
-              <p className="text-xs text-slate-500 font-medium tracking-tight">
-                {isEditing ? 'Modifica los parámetros del bloque horario.' : 'Completa los detalles para bloquear el espacio.'}
+              <h2 className="mt-1 text-lg md:text-xl font-black text-slate-900">{isEditing ? 'Editar bloque' : 'Crear bloque'}</h2>
+              <p className="hidden md:block text-xs text-slate-500 font-medium tracking-tight">
+                {isEditing ? 'Modifica los parÃ¡metros del bloque horario.' : 'Completa los detalles para bloquear el espacio.'}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -270,7 +270,7 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
                   }}
                   disabled={isSaving || isDeleting}
                   className="p-2 text-rose-500 hover:bg-rose-50 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  title="Eliminar Reservación"
+                  title="Eliminar ReservaciÃ³n"
                 >
                   {isDeleting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
                 </button>
@@ -281,11 +281,11 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
             </div>
           </div>
 
-          <div className="p-5 md:p-8 space-y-6 max-h-[72vh] md:max-h-[70vh] overflow-y-auto custom-scrollbar bg-white text-slate-900">
+          <div className="flex-1 min-h-0 p-4 md:p-8 space-y-5 md:space-y-6 overflow-y-auto custom-scrollbar bg-white text-slate-900">
             {/* Type Selector */}
             <div className="flex bg-slate-50 p-1.5 rounded-2xl gap-2 overflow-x-auto border border-slate-100">
               {[
-                { id: 'session', label: 'Sesión', icon: User },
+                { id: 'session', label: 'SesiÃ³n', icon: User },
                 { id: 'interview', label: 'Entrevista', icon: FileText },
                 { id: 'survey', label: 'Otros', icon: AlertCircle },
               ].map((t) => (
@@ -334,7 +334,7 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
                 {selectedProfessionalBusy && (
                   <div className="flex items-center gap-2 text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-100 rounded-xl px-3 py-2">
                     <span className="w-2 h-2 rounded-full bg-rose-500" />
-                    Ese profesional ya está ocupado en este horario.
+                    Ese profesional ya estÃ¡ ocupado en este horario.
                   </div>
                 )}
                 {!selectedProfessionalBusy && selectedDayAppointments.some((appointment) => appointment.proId) && (
@@ -367,7 +367,7 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
                 {selectedRoomBusy && (
                   <div className="flex items-center gap-2 text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-100 rounded-xl px-3 py-2">
                     <span className="w-2 h-2 rounded-full bg-rose-500" />
-                    Ese consultorio ya está ocupado en este horario.
+                    Ese consultorio ya estÃ¡ ocupado en este horario.
                   </div>
                 )}
                 {!selectedRoomBusy && selectedDayAppointments.some((appointment) => appointment.roomId) && (
@@ -418,8 +418,8 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
                   className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-cyan-100 text-slate-900"
                 >
                   <option value="none">No se repite</option>
-                  <option value="daily">Todos los días</option>
-                  <option value="weekdays">Cada día hábil (Lun a Vie)</option>
+                  <option value="daily">Todos los dÃ­as</option>
+                  <option value="weekdays">Cada dÃ­a hÃ¡bil (Lun a Vie)</option>
                   <option value="weekly">Semanalmente (Personalizado)</option>
                 </select>
               </div>
@@ -431,7 +431,7 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
                 animate={{ opacity: 1, y: 0 }}
                 className="p-4 bg-cyan-50 rounded-2xl border border-cyan-100 space-y-3"
               >
-                <p className="text-[10px] font-black text-cyan-700 uppercase tracking-widest leading-none">Seleccionar días de repetición</p>
+                <p className="text-[10px] font-black text-cyan-700 uppercase tracking-widest leading-none">Seleccionar dÃ­as de repeticiÃ³n</p>
                 <div className="flex justify-between">
                   {DAY_LABELS.map((label, i) => (
                     <button
@@ -477,7 +477,7 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
             </div>
           </div>
 
-          <div className="p-4 md:p-6 bg-slate-50 border-t border-slate-100 flex flex-col-reverse sm:flex-row gap-3 sm:gap-4">
+          <div className="shrink-0 p-4 md:p-6 bg-slate-50 border-t border-slate-100 flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
             <button 
               onClick={onClose}
               disabled={isSaving || isDeleting}
@@ -506,7 +506,7 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
                   Eliminando...
                 </span>
               ) : (
-                'Confirmar Reservaci�n'
+                'Confirmar Reservación'
               )}
             </button>
           </div>
