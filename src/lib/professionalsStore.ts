@@ -18,7 +18,8 @@ type BackendMode = 'sheet' | 'supabase' | 'local';
 
 const STORAGE_KEY = 'creare.professionals';
 const BACKEND_MODE = (import.meta.env.VITE_BACKEND_MODE ?? 'sheet') as BackendMode;
-const SHEET_ENDPOINT = import.meta.env.VITE_SHEETS_ENDPOINT_URL as string | undefined;
+const DEFAULT_SHEET_ENDPOINT = 'https://script.google.com/macros/s/AKfycbx9q0N70YP58eJhfnF8PHJetlMV9NjayOnduGPUgPmsaRyEKWcyIVuzMPjmwO1l56NH/exec';
+const SHEET_ENDPOINT = (import.meta.env.VITE_SHEETS_ENDPOINT_URL as string | undefined) || DEFAULT_SHEET_ENDPOINT;
 const hasRemoteSheet = BACKEND_MODE === 'sheet' && Boolean(SHEET_ENDPOINT);
 const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop';
 
