@@ -4,10 +4,10 @@
  */
 
 import { useMemo, useState } from 'react';
-import { MoreHorizontal, Mail, Phone, Clock, DollarSign, X, Save, Palette } from 'lucide-react';
+import { MoreHorizontal, Mail, Phone, Clock, DollarSign, X, Save } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
-import { ProfessionalRecord, resetProfessionals, useProfessionals } from '../lib/professionalsStore';
+import { ProfessionalRecord, createProfessional, deleteProfessional, resetProfessionals, useProfessionals } from '../lib/professionalsStore';
 
 const colorOptions = [
   { label: 'Azul', value: 'bg-blue-500' },
@@ -32,30 +32,68 @@ const buildDefaultForm = (professional: ProfessionalRecord) => ({
   image: professional.image,
 });
 
+const buildNewForm = () => ({
+  name: '',
+  specialty: '',
+  color: 'bg-blue-500',
+  status: 'Activo' as ProfessionalRecord['status'],
+  email: '',
+  phone: '',
+  hours: 'Lun, Mie, Vie (08:00 - 14:00)',
+  retention: '20%',
+  image: '',
+});
+
 export const ProfessionalsGrid = () => {
   const [professionals, updateProfessional] = useProfessionals();
   const [editingProfessional, setEditingProfessional] = useState<ProfessionalRecord | null>(null);
-  const [form, setForm] = useState<ReturnType<typeof buildDefaultForm> | null>(null);
+  const [editorMode, setEditorMode] = useState<'create' | 'edit' | null>(null);
+  const [form, setForm] = useState<ReturnType<typeof buildDefaultForm> | ReturnType<typeof buildNewForm> | null>(null);
 
   const professionalsWithDetails = useMemo(() => professionals, [professionals]);
 
   const openEditor = (professional: ProfessionalRecord) => {
     setEditingProfessional(professional);
+    setEditorMode('edit');
     setForm(buildDefaultForm(professional));
+  };
+
+  const openCreator = () => {
+    setEditingProfessional(null);
+    setEditorMode('create');
+    setForm(buildNewForm());
   };
 
   const closeEditor = () => {
     setEditingProfessional(null);
+    setEditorMode(null);
     setForm(null);
   };
 
   const handleSave = () => {
-    if (!editingProfessional || !form) return;
+    if (!form || !editorMode) return;
 
-    updateProfessional(editingProfessional.id, {
+    const payload = {
       ...form,
       status: form.status === 'En Pausa' ? 'En Pausa' : 'Activo',
-    });
+    };
+
+    if (editorMode === 'create') {
+      createProfessional(payload);
+    } else if (editingProfessional) {
+      updateProfessional(editingProfessional.id, payload);
+    }
+
+    closeEditor();
+  };
+
+  const handleDelete = () => {
+    if (!editingProfessional) return;
+
+    const confirmed = window.confirm(`Eliminar a ${editingProfessional.name}? Esta accion no se puede deshacer.`);
+    if (!confirmed) return;
+
+    deleteProfessional(editingProfessional.id);
     closeEditor();
   };
 
@@ -73,7 +111,10 @@ export const ProfessionalsGrid = () => {
           >
             Restaurar base
           </button>
-          <button className="inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200">
+          <button
+            onClick={openCreator}
+            className="inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200"
+          >
             Nuevo Profesional
           </button>
         </div>
@@ -136,7 +177,7 @@ export const ProfessionalsGrid = () => {
       </div>
 
       <AnimatePresence>
-        {editingProfessional && form && (
+        {form && editorMode && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -152,8 +193,12 @@ export const ProfessionalsGrid = () => {
             >
               <div className="p-5 md:p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.24em] text-slate-400">Editar colaborador</p>
-                  <h2 className="text-xl font-black text-slate-900">{editingProfessional.name}</h2>
+                  <p className="text-[10px] font-black uppercase tracking-[0.24em] text-slate-400">
+                    {editorMode === 'create' ? 'Crear colaborador' : 'Editar colaborador'}
+                  </p>
+                  <h2 className="text-xl font-black text-slate-900">
+                    {editorMode === 'create' ? 'Nuevo colaborador' : editingProfessional?.name}
+                  </h2>
                 </div>
                 <button onClick={closeEditor} className="p-2 rounded-full hover:bg-white transition-colors">
                   <X className="w-5 h-5 text-slate-400" />
@@ -250,18 +295,29 @@ export const ProfessionalsGrid = () => {
                   <div className="flex items-center gap-3">
                     <div className={cn('w-12 h-12 rounded-2xl', form.color)} />
                     <div>
-                      <p className="text-sm font-black text-slate-900">{form.name}</p>
-                      <p className="text-xs text-slate-500">{form.specialty}</p>
+                      <p className="text-sm font-black text-slate-900">{form.name || 'Sin nombre'}</p>
+                      <p className="text-xs text-slate-500">{form.specialty || 'Sin especialidad'}</p>
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={handleSave}
-                    className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 transition-colors"
-                  >
-                    <Save className="w-4 h-4" />
-                    Guardar cambios
-                  </button>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    {editorMode === 'edit' && editingProfessional && (
+                      <button
+                        type="button"
+                        onClick={handleDelete}
+                        className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-rose-200 text-rose-600 bg-white font-bold text-sm hover:bg-rose-50 transition-colors"
+                      >
+                        Eliminar
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleSave}
+                      className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 transition-colors"
+                    >
+                      <Save className="w-4 h-4" />
+                      {editorMode === 'create' ? 'Crear colaborador' : 'Guardar cambios'}
+                    </button>
+                  </div>
                 </div>
               </div>
             </motion.div>

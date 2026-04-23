@@ -15,13 +15,30 @@ export type ProfessionalRecord = {
 };
 
 const STORAGE_KEY = 'creare.professionals';
+const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop';
+
+const slugify = (value: string) =>
+  value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '.')
+    .replace(/(^\.|\.$)/g, '');
+
+const createId = () => {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return crypto.randomUUID();
+  }
+
+  return `pro-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+};
 
 const enrichProfessional = (professional: typeof DEFAULT_PROFESSIONALS[number]): ProfessionalRecord => ({
   ...professional,
   email: `${professional.name.toLowerCase()}@lab.com`,
   phone: '+54 11 2345-6789',
   retention: '20%',
-  hours: 'Lun, Mié, Vie (08:00 - 14:00)',
+  hours: 'Lun, Mie, Vie (08:00 - 14:00)',
   image: `https://images.unsplash.com/photo-${professional.id === '1'
     ? '1494790108377-be9c29b29330'
     : professional.id === '2'
@@ -30,6 +47,29 @@ const enrichProfessional = (professional: typeof DEFAULT_PROFESSIONALS[number]):
 });
 
 const createDefaultProfessionals = (): ProfessionalRecord[] => DEFAULT_PROFESSIONALS.map(enrichProfessional);
+
+const normalizeProfessional = (
+  professional: Partial<ProfessionalRecord> & { id: string },
+  fallback?: ProfessionalRecord,
+): ProfessionalRecord => {
+  const base = fallback ?? createDefaultProfessionals()[0];
+  const name = String(professional.name || base.name || 'Sin nombre');
+
+  return {
+    ...base,
+    ...professional,
+    id: String(professional.id),
+    name,
+    specialty: String(professional.specialty || base.specialty || ''),
+    color: String(professional.color || base.color || 'bg-slate-500'),
+    status: professional.status === 'En Pausa' ? 'En Pausa' : 'Activo',
+    email: String(professional.email || (name ? `${slugify(name)}@lab.com` : '') || base.email || ''),
+    phone: String(professional.phone || base.phone || ''),
+    hours: String(professional.hours || base.hours || 'Lun, Mie, Vie (08:00 - 14:00)'),
+    retention: String(professional.retention || base.retention || '20%'),
+    image: String(professional.image || base.image || DEFAULT_IMAGE),
+  };
+};
 
 const readProfessionals = (): ProfessionalRecord[] => {
   if (typeof window === 'undefined') {
@@ -49,20 +89,16 @@ const readProfessionals = (): ProfessionalRecord[] => {
       return createDefaultProfessionals();
     }
 
-    return parsed.map((professional) => ({
-      ...enrichProfessional(DEFAULT_PROFESSIONALS.find((item) => item.id === String(professional.id)) || DEFAULT_PROFESSIONALS[0]),
-      ...professional,
-      id: String(professional.id),
-      name: String(professional.name || 'Sin nombre'),
-      specialty: String(professional.specialty || ''),
-      color: String(professional.color || 'bg-slate-500'),
-      status: professional.status === 'En Pausa' ? 'En Pausa' : 'Activo',
-      email: String(professional.email || ''),
-      phone: String(professional.phone || ''),
-      hours: String(professional.hours || ''),
-      retention: String(professional.retention || ''),
-      image: String(professional.image || ''),
-    }));
+    return parsed.map((professional) => {
+      const fallback = DEFAULT_PROFESSIONALS.find((item) => item.id === String(professional.id));
+      return normalizeProfessional(
+        {
+          ...professional,
+          id: String(professional.id || createId()),
+        },
+        fallback ? enrichProfessional(fallback) : undefined,
+      );
+    });
   } catch {
     return createDefaultProfessionals();
   }
@@ -97,14 +133,46 @@ export const updateProfessional = (id: string, patch: Partial<ProfessionalRecord
   const current = getProfessionalsSnapshot();
   const next = current.map((professional) => (
     professional.id === id
-      ? {
-          ...professional,
-          ...patch,
-          id: professional.id,
-        }
+      ? normalizeProfessional(
+          {
+            ...professional,
+            ...patch,
+            id: professional.id,
+          },
+          professional,
+        )
       : professional
   ));
 
+  writeProfessionals(next);
+  emit(next);
+  return next;
+};
+
+export const createProfessional = (data: Partial<ProfessionalRecord>) => {
+  const current = getProfessionalsSnapshot();
+  const nextProfessional = normalizeProfessional({
+    id: createId(),
+    name: String(data.name || 'Sin nombre'),
+    specialty: String(data.specialty || ''),
+    color: String(data.color || 'bg-blue-500'),
+    status: data.status === 'En Pausa' ? 'En Pausa' : 'Activo',
+    email: String(data.email || ''),
+    phone: String(data.phone || ''),
+    hours: String(data.hours || 'Lun, Mie, Vie (08:00 - 14:00)'),
+    retention: String(data.retention || '20%'),
+    image: String(data.image || DEFAULT_IMAGE),
+  });
+
+  const next = [...current, nextProfessional];
+  writeProfessionals(next);
+  emit(next);
+  return nextProfessional;
+};
+
+export const deleteProfessional = (id: string) => {
+  const current = getProfessionalsSnapshot();
+  const next = current.filter((professional) => professional.id !== id);
   writeProfessionals(next);
   emit(next);
   return next;
@@ -131,5 +199,5 @@ export const useProfessionals = () => {
     };
   }, []);
 
-  return [professionals, updateProfessional, resetProfessionals] as const;
+  return [professionals, updateProfessional, resetProfessionals, createProfessional, deleteProfessional] as const;
 };
