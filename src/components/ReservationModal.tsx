@@ -477,7 +477,7 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
             </div>
           </div>
 
-          <div className="shrink-0 p-4 md:p-6 bg-slate-50 border-t border-slate-100 flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
+          <div className="shrink-0 p-3 md:p-6 bg-slate-50 border-t border-slate-100 flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 pb-[calc(env(safe-area-inset-bottom)+4.5rem)] md:pb-6">
             <button 
               onClick={onClose}
               disabled={isSaving || isDeleting}
