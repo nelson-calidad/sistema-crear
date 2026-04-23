@@ -285,30 +285,6 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
     return hasUnassigned ? [...base, UNASSIGNED_COLUMN] : base;
   }, [selectedDateAppointments, viewMode]);
 
-  const mobileResources = useMemo(() => {
-    if (viewMode === 'professionals') {
-      return professionals.map((professional) => ({
-        id: professional.id,
-        name: professional.name,
-        subtitle: professional.specialty,
-        colorClass: professional.color,
-        count: selectedDateAppointments.filter((appointment) => (appointment.professionalId || appointment.proId) === professional.id).length,
-        kind: 'professional' as const,
-      }));
-    }
-
-    const roomPalette = ['bg-cyan-500', 'bg-emerald-500', 'bg-amber-500', 'bg-violet-500', 'bg-rose-500', 'bg-sky-500'];
-
-    return ROOMS.map((room, index) => ({
-      id: room.id,
-      name: room.name,
-      subtitle: 'Consultorio',
-      colorClass: roomPalette[index % roomPalette.length],
-      count: selectedDateAppointments.filter((appointment) => appointment.roomId === room.id).length,
-      kind: 'room' as const,
-    }));
-  }, [professionals, selectedDateAppointments, viewMode]);
-
   const mobileRoomColumns = useMemo(() => {
     const roomPalette = ['bg-cyan-500', 'bg-emerald-500', 'bg-amber-500', 'bg-violet-500', 'bg-rose-500', 'bg-sky-500'];
 
@@ -549,7 +525,7 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
         </div>
       </div>
 
-      <div className="grid gap-2 md:gap-3 lg:gap-4 [grid-template-columns:repeat(auto-fit,minmax(160px,1fr))] items-stretch">
+      <div className="hidden md:grid gap-2 md:gap-3 lg:gap-4 [grid-template-columns:repeat(auto-fit,minmax(160px,1fr))] items-stretch">
         <div className="rounded-2xl border border-slate-200 bg-white/85 px-3 py-2 shadow-sm">
           <p className="text-[9px] font-black uppercase tracking-[0.22em] text-slate-400">Turnos del día</p>
           <p className="mt-1 text-lg font-black text-slate-900">{appointmentKindSummary.total}</p>
@@ -579,48 +555,6 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
             <div className="md:hidden p-2 pb-2 space-y-2 overflow-y-auto custom-scrollbar">
               {viewMode === 'professionals' ? (
                 <>
-                  <div className="flex gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
-                    {mobileResources.map((resource) => {
-                      const isActive = resource.count > 0;
-
-                      return (
-                        <button
-                          key={resource.id}
-                          type="button"
-                          onClick={() => {
-                            if (resource.count === 0) return;
-                            const first = selectedDateAppointments.find((appointment) =>
-                              resource.kind === 'professional'
-                                ? (appointment.professionalId || appointment.proId) === resource.id
-                                : appointment.roomId === resource.id,
-                            );
-                            if (first) {
-                              onOpenModal(
-                                ROOMS.find((room) => room.id === first.roomId)?.name,
-                                professionals.find((professional) => professional.id === first.professionalId || first.proId)?.name,
-                                first,
-                              );
-                            }
-                          }}
-                          className={cn(
-                            'min-w-[84px] px-2 py-1.5 rounded-2xl border text-left transition-all shrink-0',
-                            isActive ? 'bg-white border-blue-200 shadow-sm shadow-blue-100/40' : 'bg-slate-50/80 border-slate-100 opacity-70',
-                          )}
-                        >
-                          <div className="flex items-center gap-1.5">
-                            <div className={cn('w-6 h-6 rounded-lg flex items-center justify-center text-white font-black text-[9px]', resource.colorClass)}>
-                              {resource.name[0]}
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-[9px] font-black text-slate-900 truncate">{resource.name}</p>
-                              <p className="text-[8px] uppercase font-bold text-slate-400 truncate">{resource.count} turnos</p>
-                            </div>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-
                   {visibleAppointments.length === 0 ? (
                     <div className="p-4 rounded-3xl border border-dashed border-slate-200 bg-slate-50 text-center">
                       <p className="text-sm font-bold text-slate-700">No hay turnos para este día</p>
@@ -659,41 +593,13 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
                 </>
               ) : (
                 <div className="space-y-3">
-                  <div className="flex gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
-                    {mobileRoomColumns.map((room) => {
-                      const isActive = room.appointments.length > 0;
-
-                      return (
-                        <button
-                          key={room.id}
-                          type="button"
-                          onClick={() => onOpenModal(room.name, undefined)}
-                          className={cn(
-                            'min-w-[84px] px-2 py-1.5 rounded-2xl border text-left transition-all shrink-0',
-                            isActive ? 'bg-white border-cyan-200 shadow-sm shadow-cyan-100/40' : 'bg-slate-50/80 border-slate-100 opacity-70',
-                          )}
-                        >
-                          <div className="flex items-center gap-1.5">
-                            <div className={cn('w-6 h-6 rounded-lg flex items-center justify-center text-white font-black text-[9px]', room.colorClass)}>
-                              {room.name[0]}
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-[9px] font-black text-slate-900 truncate">{room.name}</p>
-                              <p className="text-[8px] uppercase font-bold text-slate-400 truncate">{room.appointments.length} turnos</p>
-                            </div>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-
                   <div className="flex gap-2 overflow-x-auto pb-1 custom-scrollbar snap-x snap-mandatory">
                     {mobileRoomColumns.map((room) => (
                       <div
                         key={room.id}
-                        className="min-w-[92%] snap-start rounded-3xl border border-slate-100 bg-white/95 shadow-sm p-3.5 shrink-0"
+                        className="min-w-[92%] snap-start rounded-3xl border border-slate-100 bg-white/95 shadow-sm p-4 shrink-0"
                       >
-                        <div className="flex items-center justify-between gap-2 mb-2.5">
+                        <div className="flex items-center justify-between gap-2 mb-2">
                           <div className="flex items-center gap-2 min-w-0">
                             <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center text-white font-black text-[11px]', room.colorClass)}>
                               {room.name[0]}
@@ -708,7 +614,7 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
                           </span>
                         </div>
 
-                        <div className="space-y-2 max-h-[58vh] overflow-y-auto custom-scrollbar pr-1">
+                        <div className="space-y-2 max-h-[64vh] overflow-y-auto custom-scrollbar pr-1">
                           {room.appointments.length === 0 ? (
                             <div className="p-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 text-center">
                               <p className="text-sm font-bold text-slate-700">Sin turnos</p>
