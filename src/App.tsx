@@ -3,19 +3,19 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState } from 'react';
+import { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import { Sidebar } from './components/Sidebar';
-import { Dashboard } from './components/Dashboard';
-import { ProfessionalsGrid } from './components/ProfessionalsGrid';
-import { Agenda } from './components/Agenda';
-import { Finance } from './components/Finance';
-import { Settings } from './components/Settings';
 import { Bell, Search, User, X, CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useEffect, useRef } from 'react';
 import { ReservationModal } from './components/ReservationModal';
 import { deleteAppointment, getBackendLabel, getSessionUser, saveAppointment, subscribeToAppointments } from './lib/appointmentsStore';
 import logoCrear from './assets/logo-crear.png';
+
+const Dashboard = lazy(() => import('./components/Dashboard').then((module) => ({ default: module.Dashboard })));
+const ProfessionalsGrid = lazy(() => import('./components/ProfessionalsGrid').then((module) => ({ default: module.ProfessionalsGrid })));
+const Agenda = lazy(() => import('./components/Agenda').then((module) => ({ default: module.Agenda })));
+const Finance = lazy(() => import('./components/Finance').then((module) => ({ default: module.Finance })));
+const Settings = lazy(() => import('./components/Settings').then((module) => ({ default: module.Settings })));
 
 type ToastTone = 'success' | 'error' | 'info';
 
@@ -180,6 +180,15 @@ export default function App() {
     }
   };
 
+  const loadingFallback = (
+    <div className="flex h-full items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white/70 p-8 text-center">
+      <div>
+        <p className="text-xs font-black uppercase tracking-[0.24em] text-slate-400">CREAR</p>
+        <p className="mt-2 text-sm font-bold text-slate-700">Cargando vista...</p>
+      </div>
+    </div>
+  );
+
   return (
     <div className="premium-theme flex h-[100dvh] bg-slate-50 font-sans text-slate-900 antialiased overflow-hidden">
       <Sidebar
@@ -249,18 +258,20 @@ export default function App() {
         </header>
 
         <section className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.2 }}
-              className="h-full"
-            >
-              {renderContent()}
-            </motion.div>
-          </AnimatePresence>
+          <Suspense fallback={loadingFallback}>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.2 }}
+                className="h-full"
+              >
+                {renderContent()}
+              </motion.div>
+            </AnimatePresence>
+          </Suspense>
         </section>
       </main>
 
