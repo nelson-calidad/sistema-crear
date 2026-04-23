@@ -27,6 +27,7 @@ import {
   MapPin,
   BadgeInfo,
   Printer,
+  RefreshCw,
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from '../lib/utils';
@@ -34,6 +35,7 @@ import { AppointmentRecord } from '../types';
 import { ROOMS } from '../constants';
 import { buildDailyPdfHtml, buildMonthlyPdfHtml, openPrintableReport } from '../lib/appointmentPdf';
 import { useProfessionals } from '../lib/professionalsStore';
+import { refreshAppointments } from '../lib/appointmentsStore';
 
 const HOURS = Array.from({ length: 14 }, (_, i) => 8 + i);
 const UNASSIGNED_COLUMN = { id: 'unassigned', name: 'Sin asignar', color: 'bg-slate-400' };
@@ -388,6 +390,18 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
           >
             <Printer className="w-3.5 h-3.5" />
             PDF Mes
+          </button>
+
+          <button
+            onClick={() => {
+              void refreshAppointments().catch((error) => {
+                console.warn('No se pudo refrescar la agenda manualmente.', error);
+              });
+            }}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white/80 text-slate-700 border border-slate-200 rounded-xl font-bold text-xs hover:bg-slate-50 transition-colors shadow-sm col-span-2 md:col-span-1 w-full md:w-auto backdrop-blur-sm"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            Refrescar
           </button>
         </div>
       </div>

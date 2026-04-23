@@ -229,6 +229,10 @@ const broadcast = async () => {
   emitAppointments(appointments);
 };
 
+export const refreshAppointments = async () => {
+  await broadcast();
+};
+
 const ensureRemotePolling = () => {
   if (!hasRemoteSheet || remotePollHandle || typeof window === 'undefined') {
     return;
