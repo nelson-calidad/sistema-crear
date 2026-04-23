@@ -228,7 +228,8 @@ function upsertAppointment_(sheet, appointment, allowUpdate) {
     return;
   }
 
-  sheet.appendRow(rowValues);
+  sheet.insertRowBefore(2);
+  sheet.getRange(2, 1, 1, HEADER.length).setValues([rowValues]);
 }
 
 function deleteAppointment_(sheet, id) {
