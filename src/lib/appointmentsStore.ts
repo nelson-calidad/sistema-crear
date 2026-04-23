@@ -9,9 +9,12 @@ const SHEET_ENDPOINT = (import.meta.env.VITE_SHEETS_ENDPOINT_URL as string | und
 
 const listeners = new Set<(appointments: AppointmentRecord[]) => void>();
 let remotePollHandle: number | undefined;
+let visibilityListenerAttached = false;
+let visibilityChangeHandler: (() => void) | undefined;
 let cachedAppointments: AppointmentRecord[] = [];
 
 const hasRemoteSheet = BACKEND_MODE === 'sheet' && Boolean(SHEET_ENDPOINT);
+const REMOTE_POLL_INTERVAL_MS = 15 * 60 * 1000;
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -272,10 +275,27 @@ const ensureRemotePolling = () => {
   }
 
   remotePollHandle = window.setInterval(() => {
+    if (typeof document !== 'undefined' && document.hidden) {
+      return;
+    }
+
     void broadcast().catch((error) => {
       console.warn('No se pudo refrescar la agenda remota.', error);
     });
-  }, 10000);
+  }, REMOTE_POLL_INTERVAL_MS);
+
+  if (!visibilityListenerAttached && typeof document !== 'undefined') {
+    visibilityChangeHandler = () => {
+      if (!document.hidden) {
+        void broadcast().catch((error) => {
+          console.warn('No se pudo refrescar la agenda al volver a la pestaña.', error);
+        });
+      }
+    };
+
+    document.addEventListener('visibilitychange', visibilityChangeHandler);
+    visibilityListenerAttached = true;
+  }
 };
 
 const stopRemotePolling = () => {
@@ -283,6 +303,13 @@ const stopRemotePolling = () => {
     window.clearInterval(remotePollHandle);
     remotePollHandle = undefined;
   }
+
+  if (visibilityChangeHandler && typeof document !== 'undefined') {
+    document.removeEventListener('visibilitychange', visibilityChangeHandler);
+    visibilityChangeHandler = undefined;
+  }
+
+  visibilityListenerAttached = false;
 };
 
 export const getBackendLabel = () => {

@@ -21,10 +21,13 @@ const BACKEND_MODE = (import.meta.env.VITE_BACKEND_MODE ?? 'sheet') as BackendMo
 const DEFAULT_SHEET_ENDPOINT = 'https://script.google.com/macros/s/AKfycbx9q0N70YP58eJhfnF8PHJetlMV9NjayOnduGPUgPmsaRyEKWcyIVuzMPjmwO1l56NH/exec';
 const SHEET_ENDPOINT = (import.meta.env.VITE_SHEETS_ENDPOINT_URL as string | undefined) || DEFAULT_SHEET_ENDPOINT;
 const hasRemoteSheet = BACKEND_MODE === 'sheet' && Boolean(SHEET_ENDPOINT);
+const REMOTE_POLL_INTERVAL_MS = 15 * 60 * 1000;
 const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop';
 
 const listeners = new Set<(professionals: ProfessionalRecord[]) => void>();
 let remotePollHandle: number | undefined;
+let visibilityListenerAttached = false;
+let visibilityChangeHandler: (() => void) | undefined;
 let cachedProfessionals = createDefaultProfessionals();
 
 const slugify = (value: string) =>
@@ -282,10 +285,27 @@ const ensureRemotePolling = () => {
   }
 
   remotePollHandle = window.setInterval(() => {
+    if (typeof document !== 'undefined' && document.hidden) {
+      return;
+    }
+
     void broadcast().catch((error) => {
       console.warn('No se pudo refrescar el equipo remotamente.', error);
     });
-  }, 30000);
+  }, REMOTE_POLL_INTERVAL_MS);
+
+  if (!visibilityListenerAttached && typeof document !== 'undefined') {
+    visibilityChangeHandler = () => {
+      if (!document.hidden) {
+        void broadcast().catch((error) => {
+          console.warn('No se pudo refrescar el equipo al volver a la pestaña.', error);
+        });
+      }
+    };
+
+    document.addEventListener('visibilitychange', visibilityChangeHandler);
+    visibilityListenerAttached = true;
+  }
 };
 
 const stopRemotePolling = () => {
@@ -293,6 +313,13 @@ const stopRemotePolling = () => {
     window.clearInterval(remotePollHandle);
     remotePollHandle = undefined;
   }
+
+  if (visibilityChangeHandler && typeof document !== 'undefined') {
+    document.removeEventListener('visibilitychange', visibilityChangeHandler);
+    visibilityChangeHandler = undefined;
+  }
+
+  visibilityListenerAttached = false;
 };
 
 const persistLocalProfessional = async (professional: ProfessionalRecord, id?: string) => {
