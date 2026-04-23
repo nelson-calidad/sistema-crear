@@ -1,5 +1,6 @@
 import { Component, type ReactNode, StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import App from './App.tsx';
 import './index.css';
 
 class AppErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
@@ -88,8 +89,6 @@ window.addEventListener('unhandledrejection', (event) => {
 
 async function bootstrap() {
   try {
-    const [{ default: App }] = await Promise.all([import('./App.tsx')]);
-
     appRoot.render(
       <StrictMode>
         <AppErrorBoundary>
