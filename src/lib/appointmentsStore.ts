@@ -67,7 +67,7 @@ const demoAppointments: AppointmentRecord[] = [
   },
   {
     id: 'demo-3',
-    title: 'Encuesta de ingreso',
+    title: 'Otros de ingreso',
     type: 'survey',
     roomId: 'c2',
     date: today(),

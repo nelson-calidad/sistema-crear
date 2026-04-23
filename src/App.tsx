@@ -126,7 +126,7 @@ export default function App() {
             <div className="hidden md:block h-8 w-px bg-white/10 mx-2" />
             <div className="flex items-center gap-3 pl-2">
               <div className="text-right">
-                <p className="text-sm font-bold text-slate-900">{user?.displayName || 'Admin LAB'}</p>
+                <p className="text-sm font-bold text-slate-900">{user?.displayName || 'Admin CREAR'}</p>
                 <p className="text-[10px] font-medium text-slate-400 uppercase tracking-tighter">{getBackendLabel()} conectado</p>
               </div>
               <button className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 border border-white/10 flex items-center justify-center text-white font-bold text-xs overflow-hidden shadow-lg shadow-slate-900/20">

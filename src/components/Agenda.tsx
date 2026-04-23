@@ -96,9 +96,9 @@ const getTypeLabel = (type?: string) => {
 };
 
 const getTypeStyles = (type?: string) => {
-  if (type === 'interview') return 'bg-[#2a2413] text-[#fff6df] border-[#7f6a2d]';
-  if (type === 'survey') return 'bg-[#102332] text-[#eaf7ff] border-[#365772]';
-  return 'bg-[#12263e] text-[#edf6ff] border-[#35506f]';
+  if (type === 'interview') return 'bg-amber-100 text-amber-950 border-amber-200';
+  if (type === 'survey') return 'bg-violet-100 text-violet-950 border-violet-200';
+  return 'bg-sky-100 text-sky-950 border-sky-200';
 };
 
 const parseTimeToMinutes = (value?: string) => {

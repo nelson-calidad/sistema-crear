@@ -78,7 +78,7 @@ export const Dashboard = ({ onQuickReserve }: { onQuickReserve?: () => void }) =
           onClick={onQuickReserve}
           className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-all shadow-xl shadow-slate-200"
         >
-           <Zap className="w-4 h-4 text-amber-400" /> Reserva Rápida
+           <Zap className="w-4 h-4 text-amber-400" /> Reserva rápida
         </button>
       </div>
 
@@ -156,7 +156,7 @@ export const Dashboard = ({ onQuickReserve }: { onQuickReserve?: () => void }) =
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               { id: 'C.1', status: 'occupied', pro: 'Vero', end: '10:45', until: 'Ocupado' },
-              { id: 'C.2', status: 'free', pro: '-', end: '-', until: 'Libre para Encuesta' },
+              { id: 'C.2', status: 'free', pro: '-', end: '-', until: 'Libre para reserva' },
               { id: 'C.3', status: 'occupied', pro: 'Carlos', end: '11:00', until: 'Ocupado' },
             ].map((room) => (
               <div key={room.id} className={cn(
@@ -197,7 +197,7 @@ export const Dashboard = ({ onQuickReserve }: { onQuickReserve?: () => void }) =
         </div>
 
         <div className="bg-slate-900 p-6 rounded-2xl text-white">
-          <h3 className="font-bold text-lg mb-6">Próximos Turnos</h3>
+          <h3 className="font-bold text-lg mb-6">Próximos turnos</h3>
           <div className="space-y-4">
             {[
               { time: '09:00 AM', name: 'Vero - Paciente: Juan P.', room: 'C.1' },

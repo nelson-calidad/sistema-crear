@@ -26,56 +26,56 @@
   }
 
   .premium-theme {
-    --bg: #07111f;
-    --bg-2: #0b1728;
-    --surface: #101d31;
-    --surface-2: #15263d;
-    --border: rgba(165, 187, 220, 0.18);
-    --border-strong: rgba(165, 187, 220, 0.28);
-    --text: #f4f7fc;
-    --text-muted: #a9b8d0;
-    --accent: #8fdcff;
-    --accent-2: #c4b5fd;
+    --bg: #f3f7fb;
+    --bg-2: #eef3f8;
+    --surface: #ffffff;
+    --surface-2: #f7f9fc;
+    --border: rgba(148, 163, 184, 0.16);
+    --border-strong: rgba(148, 163, 184, 0.26);
+    --text: #0f172a;
+    --text-muted: #64748b;
+    --accent: #38bdf8;
+    --accent-2: #a78bfa;
     --accent-3: #f9a8d4;
-    --success: #8fe3b4;
-    --warning: #f7d37b;
-    --danger: #f6a6be;
+    --success: #34d399;
+    --warning: #fbbf24;
+    --danger: #fb7185;
 
     background:
-      radial-gradient(circle at top left, rgba(196, 181, 253, 0.16), transparent 34%),
-      radial-gradient(circle at top right, rgba(143, 220, 255, 0.13), transparent 30%),
-      radial-gradient(circle at bottom left, rgba(249, 168, 212, 0.09), transparent 28%),
-      linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 48%, var(--bg) 100%);
+      radial-gradient(circle at top left, rgba(59, 130, 246, 0.08), transparent 30%),
+      radial-gradient(circle at top right, rgba(192, 132, 252, 0.07), transparent 28%),
+      radial-gradient(circle at bottom left, rgba(244, 114, 182, 0.05), transparent 25%),
+      linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
     color: var(--text);
   }
 
   .premium-theme .bg-white {
-    background-color: color-mix(in srgb, var(--surface) 84%, transparent);
+    background-color: var(--surface);
     color: var(--text);
   }
 
   .premium-theme .bg-white\/5 {
-    background-color: rgba(255, 255, 255, 0.04);
+    background-color: rgba(255, 255, 255, 0.6);
   }
 
   .premium-theme .bg-white\/10 {
-    background-color: rgba(255, 255, 255, 0.08);
+    background-color: rgba(255, 255, 255, 0.8);
   }
 
   .premium-theme .bg-white\/20 {
-    background-color: rgba(255, 255, 255, 0.14);
+    background-color: rgba(255, 255, 255, 0.92);
   }
 
   .premium-theme .bg-slate-50 {
-    background-color: color-mix(in srgb, var(--bg-2) 92%, black);
+    background-color: var(--surface-2);
   }
 
   .premium-theme .bg-slate-100 {
-    background-color: color-mix(in srgb, var(--surface) 90%, black);
+    background-color: #eef2f7;
   }
 
   .premium-theme .bg-slate-200 {
-    background-color: color-mix(in srgb, var(--surface-2) 95%, black);
+    background-color: #dde6f0;
   }
 
   .premium-theme .border-slate-50,
@@ -92,15 +92,15 @@
   }
 
   .premium-theme .text-slate-800 {
-    color: #e8eef9;
+    color: #1e293b;
   }
 
   .premium-theme .text-slate-700 {
-    color: #d6e0ef;
+    color: #334155;
   }
 
   .premium-theme .text-slate-600 {
-    color: #bbc7db;
+    color: #475569;
   }
 
   .premium-theme .text-slate-500 {
@@ -108,28 +108,28 @@
   }
 
   .premium-theme .text-slate-400 {
-    color: #7d8ea9;
+    color: #94a3b8;
   }
 
   .premium-theme .text-slate-300 {
-    color: #60708d;
+    color: #cbd5e1;
   }
 
   .premium-theme .bg-blue-50 {
-    background-color: rgba(143, 220, 255, 0.12);
+    background-color: rgba(56, 189, 248, 0.12);
   }
 
   .premium-theme .bg-blue-100 {
-    background-color: rgba(143, 220, 255, 0.18);
+    background-color: rgba(56, 189, 248, 0.16);
   }
 
   .premium-theme .bg-blue-600 {
     background-color: var(--accent);
-    color: #08101f;
+    color: white;
   }
 
   .premium-theme .hover\:bg-blue-700:hover {
-    background-color: #7ccff1;
+    background-color: #0ea5e9;
   }
 
   .premium-theme .text-blue-600 {
@@ -137,76 +137,76 @@
   }
 
   .premium-theme .text-blue-700 {
-    color: #bde8ff;
+    color: #0284c7;
   }
 
   .premium-theme .border-blue-100 {
-    border-color: rgba(143, 220, 255, 0.24);
+    border-color: rgba(56, 189, 248, 0.22);
   }
 
   .premium-theme .border-blue-200 {
-    border-color: rgba(143, 220, 255, 0.34);
+    border-color: rgba(56, 189, 248, 0.34);
   }
 
   .premium-theme .shadow-blue-200 {
-    --tw-shadow-color: rgba(143, 220, 255, 0.28);
+    --tw-shadow-color: rgba(56, 189, 248, 0.22);
     --tw-shadow: var(--tw-shadow-colored);
   }
 
   .premium-theme .bg-emerald-50 {
-    background-color: rgba(143, 227, 180, 0.12);
+    background-color: rgba(52, 211, 153, 0.12);
   }
 
   .premium-theme .bg-emerald-500 {
     background-color: var(--success);
-    color: #07131a;
+    color: white;
   }
 
   .premium-theme .text-emerald-600 {
-    color: #a7eac0;
+    color: #10b981;
   }
 
   .premium-theme .text-emerald-700 {
-    color: #d6f6e2;
+    color: #059669;
   }
 
   .premium-theme .bg-rose-50 {
-    background-color: rgba(246, 166, 190, 0.12);
+    background-color: rgba(251, 113, 133, 0.12);
   }
 
   .premium-theme .bg-rose-500 {
     background-color: var(--danger);
-    color: #1d1020;
+    color: white;
   }
 
   .premium-theme .text-rose-600 {
-    color: #f2b3c6;
+    color: #e11d48;
   }
 
   .premium-theme .text-rose-700 {
-    color: #f7cbd8;
+    color: #be123c;
   }
 
   .premium-theme .bg-amber-50 {
-    background-color: rgba(247, 211, 123, 0.12);
+    background-color: rgba(251, 191, 36, 0.12);
   }
 
   .premium-theme .bg-amber-500 {
     background-color: var(--warning);
-    color: #1b1409;
+    color: #1f2937;
   }
 
   .premium-theme .text-amber-600 {
-    color: #f4cf8d;
+    color: #d97706;
   }
 
   .premium-theme .text-amber-700 {
-    color: #f8e1c0;
+    color: #b45309;
   }
 
   .premium-theme .bg-slate-900 {
-    background-color: color-mix(in srgb, var(--bg) 94%, black);
-    color: var(--text);
+    background-color: #0f172a;
+    color: white;
   }
 
   .premium-theme .text-slate-950 {
@@ -219,11 +219,11 @@
   .premium-theme .shadow-xl,
   .premium-theme .shadow-2xl {
     box-shadow:
-      0 18px 50px rgba(4, 10, 24, 0.36),
-      0 2px 8px rgba(4, 10, 24, 0.16);
+      0 18px 40px rgba(15, 23, 42, 0.10),
+      0 2px 8px rgba(15, 23, 42, 0.06);
   }
 
   .premium-theme .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-cyan-400/40 rounded-full hover:bg-cyan-300/60 transition-colors;
+    @apply bg-cyan-400/35 rounded-full hover:bg-cyan-300/55 transition-colors;
   }
 }
