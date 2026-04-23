@@ -174,6 +174,33 @@ const readRemoteAppointments = async (): Promise<AppointmentRecord[]> => {
   }
 };
 
+const fetchRemoteAppointmentsStrict = async (): Promise<AppointmentRecord[]> => {
+  if (!SHEET_ENDPOINT) {
+    throw new Error('No hay endpoint de Sheets configurado.');
+  }
+
+  const response = await fetch(SHEET_ENDPOINT, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+    },
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    throw new Error(`No se pudieron leer los datos del sheet (${response.status})`);
+  }
+
+  const payload = await response.json();
+  const rawAppointments = Array.isArray(payload)
+    ? payload
+    : Array.isArray(payload?.appointments)
+      ? payload.appointments
+      : [];
+
+  return rawAppointments.map((item) => normalizeAppointment(item));
+};
+
 const broadcast = async () => {
   const appointments = hasRemoteSheet ? await readRemoteAppointments() : readLocalAppointments();
   emitAppointments(appointments);
@@ -289,6 +316,12 @@ const persistRemoteAppointment = async (appointment: AppointmentRecord, id?: str
   writeLocalAppointments(nextAppointments);
   emitAppointments(nextAppointments);
 
+  const remoteAppointments = await fetchRemoteAppointmentsStrict();
+  const targetId = String(id || appointment.id);
+  if (!remoteAppointments.some((item) => item.id === targetId)) {
+    throw new Error('Sheets respondió, pero el turno no quedó guardado.');
+  }
+
   void broadcast().catch((error) => {
     console.warn('No se pudo refrescar la agenda remota luego de guardar.', error);
   });
@@ -320,6 +353,11 @@ const deleteRemoteAppointment = async (id: string) => {
   const nextAppointments = deleteCachedAppointment(id);
   writeLocalAppointments(nextAppointments);
   emitAppointments(nextAppointments);
+
+  const remoteAppointments = await fetchRemoteAppointmentsStrict();
+  if (remoteAppointments.some((item) => item.id === id)) {
+    throw new Error('Sheets respondió, pero el turno no se eliminó.');
+  }
 
   void broadcast().catch((error) => {
     console.warn('No se pudo refrescar la agenda remota luego de eliminar.', error);
