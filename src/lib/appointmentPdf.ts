@@ -1,4 +1,4 @@
-import { format, isSameDay } from 'date-fns';
+import { format, isSameDay, eachDayOfInterval, endOfMonth, endOfWeek, startOfMonth, startOfWeek, isSameMonth } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { AppointmentRecord } from '../types';
 import { ROOMS } from '../constants';
@@ -133,7 +133,35 @@ const renderReportShell = (title: string, subtitle: string, body: string, landsc
       * { box-sizing: border-box; }
       html, body { margin: 0; padding: 0; background: #f8fafc; color: #0f172a; font-family: Inter, Arial, sans-serif; }
       body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .sheet { max-width: 1120px; margin: 0 auto; padding: 0; }
+      .sheet { max-width: 1120px; margin: 0 auto; padding: 80px 0 0; }
+      .preview-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 20;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 20px;
+        background: rgba(248, 250, 252, 0.95);
+        border-bottom: 1px solid #e2e8f0;
+        backdrop-filter: blur(10px);
+      }
+      .preview-bar .title { font-size: 14px; font-weight: 900; color: #0f172a; }
+      .preview-bar .actions { display: flex; gap: 8px; }
+      .preview-btn {
+        appearance: none;
+        border: 0;
+        border-radius: 999px;
+        padding: 10px 14px;
+        font-size: 12px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .preview-btn.primary { background: #67b7c9; color: white; }
+      .preview-btn.secondary { background: white; color: #334155; border: 1px solid #dbe4ee; }
       .hero {
         display: flex;
         justify-content: space-between;
@@ -266,22 +294,91 @@ const renderReportShell = (title: string, subtitle: string, body: string, landsc
         font-size: 11px;
         text-align: right;
       }
+      .month-calendar {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 10px;
+      }
+      .month-head {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: .12em;
+        color: #64748b;
+        font-weight: 800;
+      }
+      .month-cell {
+        min-height: 128px;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        break-inside: avoid;
+      }
+      .month-cell.outside { opacity: .38; }
+      .month-day {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+      }
+      .month-day .number {
+        width: 26px;
+        height: 26px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 900;
+        color: #0f172a;
+        background: #eff6ff;
+      }
+      .month-day .count {
+        font-size: 10px;
+        font-weight: 800;
+        color: #64748b;
+      }
+      .month-badges {
+        display: grid;
+        gap: 6px;
+      }
+      .month-badge {
+        border-radius: 999px;
+        padding: 6px 8px;
+        font-size: 10px;
+        font-weight: 800;
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        align-items: center;
+        border: 1px solid transparent;
+      }
+      .month-badge.session { background: #dbeafe; color: #1d4ed8; border-color: #bfdbfe; }
+      .month-badge.interview { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+      .month-badge.survey { background: #f3e8ff; color: #6b21a8; border-color: #e9d5ff; }
+      .month-badge .time { font-size: 9px; }
       @media print {
         body { background: white; }
         .sheet { max-width: none; }
         .hero, .card, .section, .day-card { box-shadow: none; }
+        .preview-bar { display: none; }
       }
     </style>
   </head>
   <body>
+    <div class="preview-bar">
+      <div class="title">${escapeHtml(title)} - Vista previa</div>
+      <div class="actions">
+        <button class="preview-btn secondary" onclick="window.close()">Cerrar</button>
+        <button class="preview-btn primary" onclick="window.print()">Imprimir</button>
+      </div>
+    </div>
     <div class="sheet">
       ${body}
     </div>
-    <script>
-      window.addEventListener('load', () => {
-        setTimeout(() => window.print(), 250);
-      });
-    </script>
   </body>
 </html>`;
 
@@ -393,43 +490,45 @@ export const buildMonthlyPdfHtml = (selectedDate: Date, appointments: Appointmen
     return acc;
   }, {});
 
-  const sortedDates = Object.keys(grouped).sort();
-  const daySections = sortedDates.length
-    ? sortedDates.map((key) => {
-        const parsed = parseDay(key);
-        if (!parsed) return '';
-        const dayAppointments = sortByStart(grouped[key]);
-        return `
-          <div class="day-card">
-            <div class="day-top">
-              <div>
-                <h3>${escapeHtml(format(parsed, 'EEEE, d MMMM', { locale: es }))}</h3>
-                <p>${dayAppointments.length} turno${dayAppointments.length === 1 ? '' : 's'}</p>
-              </div>
-              <div class="pill" style="background:#eff6ff;color:#1d4ed8">Dia ${escapeHtml(format(parsed, 'dd/MM'))}</div>
-            </div>
-            <div class="appointment-list">
-              ${dayAppointments.map((appointment) => `
-                <div class="appointment-item">
-                  <div>
-                    <div class="time">${escapeHtml(formatTimeOnly(appointment.start))} - ${escapeHtml(formatTimeOnly(appointment.end))}</div>
-                    <div class="subtle">${escapeHtml(getCorrespondsToLabel(appointment, professionals))}</div>
-                  </div>
-                  <div>
-                    <div><strong>${escapeHtml(getAppointmentName(appointment))}</strong></div>
-                    <div class="subtle">
-                      <span class="badge ${appointment.type}">${escapeHtml(getTypeLabel(appointment.type))}</span>
-                      <span style="display:inline-block;width:6px"></span>
-                      <span class="badge coverage">${escapeHtml(getCoverageLabel(appointment))}</span>
-                    </div>
-                    ${appointment.notes ? `<div class="subtle">${escapeHtml(appointment.notes)}</div>` : ''}
-                  </div>
+  const monthDays = eachDayOfInterval({
+    start: startOfWeek(startOfMonth(selectedDate), { weekStartsOn: 1 }),
+    end: endOfWeek(endOfMonth(selectedDate), { weekStartsOn: 1 }),
+  });
+
+  const monthGrid = monthDays.length
+    ? `
+      <div class="section">
+        <div class="section-header">
+          <h2>Calendario mensual</h2>
+          <span>${escapeHtml(monthLabel)}</span>
+        </div>
+        <div class="month-calendar">
+          ${['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map((day) => `<div class="month-head">${day}</div>`).join('')}
+          ${monthDays.map((day) => {
+            const dayAppointments = sortByStart(
+              grouped[format(day, 'yyyy-MM-dd')] || [],
+            );
+            return `
+              <div class="month-cell ${isSameMonth(day, selectedDate) ? '' : 'outside'}">
+                <div class="month-day">
+                  <span class="number">${format(day, 'd')}</span>
+                  <span class="count">${dayAppointments.length} turno${dayAppointments.length === 1 ? '' : 's'}</span>
                 </div>
-              `).join('')}
-            </div>
-          </div>
-        `;
-      }).join('')
+                <div class="month-badges">
+                  ${dayAppointments.slice(0, 3).map((appointment) => `
+                    <div class="month-badge ${appointment.type}">
+                      <span>${escapeHtml(getAppointmentName(appointment))}</span>
+                      <span class="time">${escapeHtml(formatTimeOnly(appointment.start))}</span>
+                    </div>
+                  `).join('')}
+                  ${dayAppointments.length > 3 ? `<div class="subtle">+ ${dayAppointments.length - 3} más</div>` : ''}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `
     : `<div class="section"><div class="empty">No hay turnos para este mes.</div></div>`;
 
   return renderReportShell(
@@ -473,7 +572,7 @@ export const buildMonthlyPdfHtml = (selectedDate: Date, appointments: Appointmen
           </tbody>
         </table>
       </div>
-      <div class="grid">${daySections}</div>
+      ${monthGrid}
       <div class="footer">Reporte mensual listo para imprimir o guardar como PDF.</div>
     `,
     true,

@@ -106,11 +106,11 @@ export default function App() {
       />
       
       <main className="flex-1 flex flex-col min-w-0">
-        <header className="bg-white/70 backdrop-blur-xl border-b border-white/10 px-4 md:px-8 py-4 md:py-0 flex flex-col gap-3 md:h-20 md:flex-row md:items-center md:justify-between flex-shrink-0">
+        <header className="bg-white border-b border-slate-100 px-4 md:px-8 py-4 md:py-0 flex flex-col gap-3 md:h-20 md:flex-row md:items-center md:justify-between flex-shrink-0 shadow-[0_8px_28px_rgba(148,117,96,0.04)]">
           <div className="flex items-center gap-3 md:hidden">
             <button
               onClick={() => setMobileSidebarOpen((open) => !open)}
-              className="w-11 h-11 rounded-xl bg-white/80 border border-white/10 overflow-hidden shadow-sm flex items-center justify-center"
+              className="w-11 h-11 rounded-xl bg-white border border-slate-100 overflow-hidden shadow-sm flex items-center justify-center"
               aria-label="Abrir menú"
             >
               {mobileSidebarOpen ? <X className="w-5 h-5 text-slate-900" /> : <img src={logoCrear} alt="CREAR" className="w-full h-full object-cover" />}
@@ -127,7 +127,7 @@ export default function App() {
               <input
                 type="text"
                 placeholder="Buscar pacientes, turnos o profesionales..."
-                className="w-full pl-11 pr-4 py-2.5 bg-slate-50/80 border border-white/10 focus:bg-white/90 focus:border-cyan-200/30 focus:ring-0 rounded-xl text-sm transition-all backdrop-blur-sm"
+                className="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 focus:bg-white focus:border-cyan-200 focus:ring-0 rounded-xl text-sm transition-all"
               />
             </div>
           </div>
@@ -138,23 +138,23 @@ export default function App() {
               <input
                 type="text"
                 placeholder="Buscar..."
-                className="w-full pl-11 pr-4 py-2.5 bg-slate-50/80 border border-white/10 focus:bg-white/90 focus:border-cyan-200/30 focus:ring-0 rounded-xl text-sm transition-all backdrop-blur-sm"
+                className="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 focus:bg-white focus:border-cyan-200 focus:ring-0 rounded-xl text-sm transition-all"
               />
             </div>
           </div>
           
           <div className="flex items-center justify-between md:justify-end gap-3 md:gap-4">
-            <button className="relative p-2 text-slate-400 hover:text-slate-900 hover:bg-white/60 rounded-xl transition-all border border-transparent hover:border-slate-200/70">
+            <button className="relative p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all border border-transparent hover:border-slate-200/70">
               <Bell className="w-5 h-5" />
               <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-white" />
             </button>
-            <div className="hidden md:block h-8 w-px bg-white/10 mx-2" />
+            <div className="hidden md:block h-8 w-px bg-slate-200 mx-2" />
             <div className="flex items-center gap-3 pl-2">
               <div className="text-right">
                 <p className="text-sm font-bold text-slate-900">{user?.displayName || 'Admin CREAR'}</p>
                 <p className="text-[10px] font-medium text-slate-400 uppercase tracking-tighter">{getBackendLabel()} conectado</p>
               </div>
-              <button className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 border border-white/10 flex items-center justify-center text-white font-bold text-xs overflow-hidden shadow-lg shadow-slate-900/20">
+              <button className="w-10 h-10 rounded-xl bg-[#243042] border border-slate-200 flex items-center justify-center text-white font-bold text-xs overflow-hidden shadow-lg shadow-slate-200/40">
                 {user?.photoURL ? <img src={user.photoURL} alt="avatar" /> : 'AD'}
               </button>
             </div>
@@ -261,7 +261,7 @@ export default function App() {
               >
                 <div className={`h-1 w-full ${toneStyles.accent}`} />
                 <div className="flex items-start gap-3 p-4">
-                  <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/80">
+                  <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white">
                     <Icon className="h-5 w-5" />
                   </div>
                   <div className="min-w-0 flex-1">
