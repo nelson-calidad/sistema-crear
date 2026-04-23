@@ -395,14 +395,6 @@ const openPrintWindow = (title: string, html: string) => {
   printWindow.document.close();
   printWindow.document.title = title;
   printWindow.focus();
-
-  window.setTimeout(() => {
-    try {
-      printWindow.print();
-    } catch {
-      // If the popup cannot print automatically, the rendered document remains available.
-    }
-  }, 300);
 };
 
 export const buildDailyPdfHtml = (selectedDate: Date, appointments: AppointmentRecord[]) => {
