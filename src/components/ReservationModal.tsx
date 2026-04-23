@@ -120,6 +120,36 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
   // Filter ONLY active professionals as requested
   const activeProfessionals = professionals.filter((p) => p.status === 'Activo');
 
+  const isEditing = !!initialData;
+
+  const selectedDayAppointments = useMemo(() => {
+    const targetDate = parseDay(formData.date);
+    if (!targetDate) return [];
+
+    return appointments.filter((appointment) => {
+      if (initialData && appointment.id === initialData.id) {
+        return false;
+      }
+
+      const appointmentDate = parseDay(appointment.date);
+      if (!appointmentDate) return false;
+
+      return appointmentDate.toDateString() === targetDate.toDateString();
+    });
+  }, [appointments, formData.date, initialData]);
+
+  const occupiedProfessionalIds = useMemo(() => {
+    return selectedDayAppointments
+      .filter((appointment) => appointment.proId && overlaps(formData.startTime, formData.endTime, appointment.start, appointment.end))
+      .map((appointment) => appointment.proId as string);
+  }, [selectedDayAppointments, formData.endTime, formData.startTime]);
+
+  const occupiedRoomIds = useMemo(() => {
+    return selectedDayAppointments
+      .filter((appointment) => appointment.roomId && overlaps(formData.startTime, formData.endTime, appointment.start, appointment.end))
+      .map((appointment) => appointment.roomId as string);
+  }, [selectedDayAppointments, formData.endTime, formData.startTime]);
+
   // Update selection/form if initialData or props change
   useEffect(() => {
     if (isOpen) {
@@ -164,36 +194,6 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
   }, [isOpen, initialData, professional, room, professionals]);
 
   if (!isOpen) return null;
-
-  const isEditing = !!initialData;
-
-  const selectedDayAppointments = useMemo(() => {
-    const targetDate = parseDay(formData.date);
-    if (!targetDate) return [];
-
-    return appointments.filter((appointment) => {
-      if (initialData && appointment.id === initialData.id) {
-        return false;
-      }
-
-      const appointmentDate = parseDay(appointment.date);
-      if (!appointmentDate) return false;
-
-      return appointmentDate.toDateString() === targetDate.toDateString();
-    });
-  }, [appointments, formData.date, initialData]);
-
-  const occupiedProfessionalIds = useMemo(() => {
-    return selectedDayAppointments
-      .filter((appointment) => appointment.proId && overlaps(formData.startTime, formData.endTime, appointment.start, appointment.end))
-      .map((appointment) => appointment.proId as string);
-  }, [selectedDayAppointments, formData.endTime, formData.startTime]);
-
-  const occupiedRoomIds = useMemo(() => {
-    return selectedDayAppointments
-      .filter((appointment) => appointment.roomId && overlaps(formData.startTime, formData.endTime, appointment.start, appointment.end))
-      .map((appointment) => appointment.roomId as string);
-  }, [selectedDayAppointments, formData.endTime, formData.startTime]);
 
   const isProfessionalBusy = (proId: string) => occupiedProfessionalIds.includes(proId);
   const isRoomBusy = (roomId: string) => occupiedRoomIds.includes(roomId);
