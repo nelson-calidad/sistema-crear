@@ -112,6 +112,12 @@ const getTypeStyles = (kind?: string) => {
   return 'bg-sky-100 text-sky-950 border-sky-200';
 };
 
+const getKindBadgeStyles = (kind?: string) => {
+  if (kind === 'interview') return 'bg-amber-50 text-amber-800 border-amber-200';
+  if (kind === 'block') return 'bg-violet-50 text-violet-800 border-violet-200';
+  return 'bg-sky-50 text-sky-800 border-sky-200';
+};
+
 const parseTimeToMinutes = (value?: string) => {
   if (!value) return Number.POSITIVE_INFINITY;
 
@@ -217,6 +223,52 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
       }),
     );
   }, [appointments, selectedDate]);
+
+  const appointmentKindSummary = useMemo(() => {
+    const summary = selectedDateAppointments.reduce(
+      (acc, appointment) => {
+        const kind = getAppointmentKind(appointment);
+        acc.total += 1;
+        if (kind === 'interview') acc.interview += 1;
+        else if (kind === 'block') acc.block += 1;
+        else acc.session += 1;
+        return acc;
+      },
+      { total: 0, session: 0, interview: 0, block: 0 },
+    );
+
+    return summary;
+  }, [selectedDateAppointments]);
+
+  const resourceAvailability = useMemo(() => {
+    if (viewMode === 'professionals') {
+      const busyIds = new Set(
+        selectedDateAppointments
+          .filter((appointment) => appointment.professionalId || appointment.proId)
+          .map((appointment) => appointment.professionalId || appointment.proId),
+      );
+
+      return {
+        label: 'Profesionales libres',
+        total: professionals.length,
+        busy: busyIds.size,
+        free: Math.max(professionals.length - busyIds.size, 0),
+      };
+    }
+
+    const busyIds = new Set(
+      selectedDateAppointments
+        .filter((appointment) => appointment.roomId)
+        .map((appointment) => appointment.roomId),
+    );
+
+    return {
+      label: 'Consultorios libres',
+      total: ROOMS.length,
+      busy: busyIds.size,
+      free: Math.max(ROOMS.length - busyIds.size, 0),
+    };
+  }, [professionals.length, selectedDateAppointments, viewMode]);
 
   const currentMonthAppointments = useMemo(() => {
     return appointments.filter((appointment) => {
@@ -460,9 +512,9 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
 
           {timeMode === 'daily' && (
             <div className="bg-slate-100/80 p-0.5 rounded-xl flex gap-1 w-full md:w-auto border border-slate-200/70 shrink-0">
-              <button
-                onClick={() => setViewMode('professionals')}
-                className={cn(
+            <button
+              onClick={() => setViewMode('professionals')}
+              className={cn(
                   'flex-1 md:flex-none px-2.5 md:px-3 py-1.25 md:py-1.5 rounded-lg text-[10px] md:text-[11px] font-bold transition-all inline-flex items-center justify-center gap-1.5 whitespace-nowrap',
                   viewMode === 'professionals' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700',
                 )}
@@ -517,7 +569,31 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
             >
               <RefreshCw className="w-3.5 h-3.5" />
               Refrescar
-            </button>
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 md:gap-2.5">
+        <div className="rounded-2xl border border-slate-200 bg-white/85 px-3 py-2 shadow-sm">
+          <p className="text-[9px] font-black uppercase tracking-[0.22em] text-slate-400">Turnos del día</p>
+          <p className="mt-1 text-lg font-black text-slate-900">{appointmentKindSummary.total}</p>
+        </div>
+        <div className={cn('rounded-2xl border px-3 py-2 shadow-sm', getKindBadgeStyles('session'))}>
+          <p className="text-[9px] font-black uppercase tracking-[0.22em] opacity-80">Sesiones</p>
+          <p className="mt-1 text-lg font-black">{appointmentKindSummary.session}</p>
+        </div>
+        <div className={cn('rounded-2xl border px-3 py-2 shadow-sm', getKindBadgeStyles('interview'))}>
+          <p className="text-[9px] font-black uppercase tracking-[0.22em] opacity-80">Entrevistas</p>
+          <p className="mt-1 text-lg font-black">{appointmentKindSummary.interview}</p>
+        </div>
+        <div className={cn('rounded-2xl border px-3 py-2 shadow-sm', getKindBadgeStyles('block'))}>
+          <p className="text-[9px] font-black uppercase tracking-[0.22em] opacity-80">Bloqueos</p>
+          <p className="mt-1 text-lg font-black">{appointmentKindSummary.block}</p>
+        </div>
+        <div className="col-span-2 lg:col-span-1 rounded-2xl border border-slate-200 bg-white/85 px-3 py-2 shadow-sm">
+          <p className="text-[9px] font-black uppercase tracking-[0.22em] text-slate-400">{resourceAvailability.label}</p>
+          <p className="mt-1 text-lg font-black text-slate-900">{resourceAvailability.free}/{resourceAvailability.total}</p>
+          <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-400">{resourceAvailability.busy} ocupados</p>
         </div>
       </div>
 
