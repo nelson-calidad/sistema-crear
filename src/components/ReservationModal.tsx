@@ -228,12 +228,15 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden shadow-slate-900/20 max-h-[92vh] md:max-h-none"
+          className="relative w-full max-w-lg rounded-3xl overflow-hidden max-h-[92vh] md:max-h-none border border-white/10 bg-[#09101f] text-white shadow-[0_28px_80px_rgba(2,8,23,0.55)]"
         >
-          <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+          <div className="p-6 border-b border-white/10 flex items-center justify-between bg-white/5">
             <div>
-              <h2 className="text-xl font-black text-slate-900">{isEditing ? 'Editar Reservación' : 'Nueva Reservación'}</h2>
-              <p className="text-xs text-slate-500 font-medium tracking-tight">
+              <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-300/80">
+                {isEditing ? 'Editar registro' : 'Nuevo registro'}
+              </p>
+              <h2 className="mt-1 text-xl font-black text-white">{isEditing ? 'Editar registro' : 'Nuevo registro'}</h2>
+              <p className="text-xs text-slate-300 font-medium tracking-tight">
                 {isEditing ? 'Modifica los parámetros del bloque horario.' : 'Completa los detalles para bloquear el espacio.'}
               </p>
             </div>
@@ -241,21 +244,21 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
               {isEditing && onDelete && (
                 <button 
                   onClick={() => onDelete(initialData.id)}
-                  className="p-2 text-rose-500 hover:bg-rose-50 rounded-full transition-colors"
+                  className="p-2 text-rose-300 hover:bg-rose-500/10 rounded-full transition-colors"
                   title="Eliminar Reservación"
                 >
                   <Trash2 className="w-5 h-5" />
                 </button>
               )}
-              <button onClick={onClose} className="p-2 hover:bg-white rounded-full transition-colors group">
-                <X className="w-5 h-5 text-slate-400 group-hover:text-slate-900" />
+              <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors group">
+                <X className="w-5 h-5 text-slate-300 group-hover:text-white" />
               </button>
             </div>
           </div>
 
           <div className="p-5 md:p-8 space-y-6 max-h-[72vh] md:max-h-[70vh] overflow-y-auto custom-scrollbar">
             {/* Type Selector */}
-            <div className="flex bg-slate-100 p-1.5 rounded-2xl gap-2 overflow-x-auto">
+            <div className="flex bg-white/5 p-1.5 rounded-2xl gap-2 overflow-x-auto border border-white/10">
               {[
                 { id: 'session', label: 'Sesión', icon: User },
                 { id: 'interview', label: 'Entrevista', icon: FileText },
@@ -266,7 +269,7 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
                   onClick={() => setType(t.id as any)}
                   className={cn(
                     "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all",
-                    type === t.id ? "bg-white text-blue-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                    type === t.id ? "bg-[#0e1730] text-cyan-200 shadow-sm border border-cyan-300/20" : "text-slate-400 hover:text-slate-200"
                   )}
                 >
                   <t.icon className="w-3.5 h-3.5" />
@@ -280,7 +283,7 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
               <select
                 value={coverageType}
                 onChange={(e) => setCoverageType(e.target.value as 'obra social' | 'particular')}
-                className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-blue-100"
+                className="w-full p-3 bg-white/5 border border-white/10 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-cyan-300/30 text-white"
               >
                 <option value="particular">Particular</option>
                 <option value="obra social">Obra social</option>
@@ -289,12 +292,12 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Profesional Corresponsal</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Profesional corresponsal</label>
                 <select 
                   value={selectedProId}
                   onChange={(e) => setSelectedProId(e.target.value)}
                   disabled={type === 'survey'}
-                  className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-blue-100 disabled:opacity-50"
+                  className="w-full p-3 bg-white/5 border border-white/10 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-cyan-300/30 disabled:opacity-50 text-white"
                 >
                    <option value="">Seleccionar...</option>
                    {activeProfessionals.map(pro => (
@@ -304,7 +307,7 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
                    ))}
                 </select>
                 {selectedProfessionalBusy && (
-                  <div className="flex items-center gap-2 text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-100 rounded-xl px-3 py-2">
+                  <div className="flex items-center gap-2 text-[11px] font-bold text-rose-200 bg-rose-500/10 border border-rose-400/20 rounded-xl px-3 py-2">
                     <span className="w-2 h-2 rounded-full bg-rose-500" />
                     Ese profesional ya está ocupado en este horario.
                   </div>
@@ -327,7 +330,7 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
                 <select 
                   value={selectedRoomId}
                   onChange={(e) => setSelectedRoomId(e.target.value)}
-                  className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-blue-100"
+                  className="w-full p-3 bg-white/5 border border-white/10 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-cyan-300/30 text-white"
                 >
                    <option value="">Seleccionar...</option>
                    {ROOMS.map(r => (
@@ -337,7 +340,7 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
                    ))}
                 </select>
                 {selectedRoomBusy && (
-                  <div className="flex items-center gap-2 text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-100 rounded-xl px-3 py-2">
+                  <div className="flex items-center gap-2 text-[11px] font-bold text-rose-200 bg-rose-500/10 border border-rose-400/20 rounded-xl px-3 py-2">
                     <span className="w-2 h-2 rounded-full bg-rose-500" />
                     Ese consultorio ya está ocupado en este horario.
                   </div>
@@ -364,7 +367,7 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
                   value={formData.patient}
                   onChange={(e) => setFormData({...formData, patient: e.target.value})}
                   placeholder="Nombre del paciente..."
-                  className="w-full p-4 bg-slate-50 border-slate-100 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all outline-none"
+                  className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-cyan-300/30 focus:bg-white/10 transition-all outline-none text-white placeholder:text-slate-500"
                 />
               </div>
             )}
@@ -378,7 +381,7 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
                     type="date" 
                     value={formData.date}
                     onChange={(e) => setFormData({...formData, date: e.target.value})}
-                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border-slate-100 rounded-xl text-sm font-bold outline-none"
+                    className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm font-bold outline-none text-white"
                   />
                 </div>
               </div>
@@ -387,7 +390,7 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
                 <select 
                   value={recurrence}
                   onChange={(e) => setRecurrence(e.target.value as any)}
-                  className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-blue-100"
+                  className="w-full p-3 bg-white/5 border border-white/10 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-cyan-300/30 text-white"
                 >
                   <option value="none">No se repite</option>
                   <option value="daily">Todos los días</option>
@@ -401,9 +404,9 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
               <motion.div 
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="p-4 bg-blue-50 rounded-2xl border border-blue-100 space-y-3"
+                className="p-4 bg-cyan-400/10 rounded-2xl border border-cyan-300/15 space-y-3"
               >
-                <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest leading-none">Seleccionar días de repetición</p>
+                <p className="text-[10px] font-black text-cyan-200 uppercase tracking-widest leading-none">Seleccionar días de repetición</p>
                 <div className="flex justify-between">
                   {DAY_LABELS.map((label, i) => (
                     <button
@@ -411,7 +414,7 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
                       onClick={() => toggleDay(i)}
                       className={cn(
                         "w-8 h-8 rounded-full text-[10px] font-bold transition-all",
-                        selectedDays.includes(i) ? "bg-blue-600 text-white shadow-md shadow-blue-200" : "bg-white text-slate-400 hover:bg-slate-100"
+                        selectedDays.includes(i) ? "bg-cyan-400 text-slate-950 shadow-md shadow-cyan-400/20" : "bg-white/5 text-slate-400 hover:bg-white/10"
                       )}
                     >
                       {label}
@@ -430,7 +433,7 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
                     type="time" 
                     value={formData.startTime}
                     onChange={(e) => setFormData({...formData, startTime: e.target.value})}
-                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border-slate-100 rounded-xl text-sm font-bold outline-none"
+                    className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm font-bold outline-none text-white"
                   />
                 </div>
               </div>
@@ -442,17 +445,17 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
                     type="time" 
                     value={formData.endTime}
                     onChange={(e) => setFormData({...formData, endTime: e.target.value})}
-                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border-slate-100 rounded-xl text-sm font-bold outline-none"
+                    className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm font-bold outline-none text-white"
                   />
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="p-4 md:p-6 bg-slate-50 border-t border-slate-100 flex flex-col-reverse sm:flex-row gap-3 sm:gap-4">
+          <div className="p-4 md:p-6 bg-white/5 border-t border-white/10 flex flex-col-reverse sm:flex-row gap-3 sm:gap-4">
             <button 
               onClick={onClose}
-              className="flex-1 py-3 bg-white border border-slate-200 text-slate-700 rounded-2xl font-bold text-sm hover:bg-slate-100 transition-colors"
+              className="flex-1 py-3 bg-white/5 border border-white/10 text-slate-200 rounded-2xl font-bold text-sm hover:bg-white/10 transition-colors"
             >
               Cancelar
             </button>
@@ -462,8 +465,8 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
               className={cn(
                 'flex-[2] py-3 rounded-2xl font-bold text-sm transition-colors shadow-lg',
                 selectedProfessionalBusy || selectedRoomBusy
-                  ? 'bg-rose-100 text-rose-400 cursor-not-allowed shadow-none'
-                  : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200',
+                  ? 'bg-rose-500/20 text-rose-200 cursor-not-allowed shadow-none'
+                  : 'bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 hover:from-cyan-300 hover:to-blue-400 shadow-cyan-900/20',
               )}
             >
               Confirmar Reservación
