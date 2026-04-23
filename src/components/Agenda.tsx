@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 import {
   format,
   isSameDay,
@@ -39,11 +39,16 @@ import { forceRefreshAppointments } from '../lib/appointmentsStore';
 
 const HOURS = Array.from({ length: 14 }, (_, i) => 8 + i);
 const HOUR_HEIGHT = 88;
-const HALF_HOUR_HEIGHT = HOUR_HEIGHT / 2;
+const DEFAULT_SESSION_DURATION = 45;
 const UNASSIGNED_COLUMN = { id: 'unassigned', name: 'Sin asignar', color: 'bg-slate-400' };
 
 type AgendaProps = {
-  onOpenModal: (room?: string, pro?: string, app?: AppointmentRecord) => void;
+  onOpenModal: (
+    room?: string,
+    pro?: string,
+    app?: AppointmentRecord,
+    options?: { date?: string; startTime?: string },
+  ) => void;
   appointments: AppointmentRecord[];
   focusDate?: string | null;
 };
@@ -118,6 +123,14 @@ const parseTimeToMinutes = (value?: string) => {
   }
 
   return hours * 60 + minutes;
+};
+
+const formatMinutesToTime = (minutes: number) => {
+  const safeMinutes = Math.max(minutes, 0);
+  const hours = Math.floor(safeMinutes / 60);
+  const remainder = safeMinutes % 60;
+
+  return `${hours.toString().padStart(2, '0')}:${remainder.toString().padStart(2, '0')}`;
 };
 
 const sortByStart = (items: AppointmentRecord[]) => [...items].sort((a, b) => parseTimeToMinutes(a.start) - parseTimeToMinutes(b.start));
@@ -256,6 +269,10 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
   }, [selectedDateAppointments]);
 
   const visibleAppointments = sortByStart(selectedDateAppointments);
+  const getAppointmentsForColumn = (columnId: string) => {
+    return visibleAppointments.filter((appointment) => matchesColumn(appointment, columnId));
+  };
+
   const getPositionFromTime = (timeStr: string) => {
     const minutesSinceStart = parseTimeToMinutes(timeStr) - (8 * 60);
     return (minutesSinceStart / 60) * HOUR_HEIGHT;
@@ -283,6 +300,53 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
   const handleMonthlyPdf = () => {
     const html = buildMonthlyPdfHtml(selectedDate, appointments);
     openPrintableReport(`Agenda mensual - ${formatDateEs(selectedDate, 'MMMM yyyy')}`, html);
+  };
+
+  const resolveNextAvailableStart = (columnAppointments: AppointmentRecord[], requestedStart: number) => {
+    const baseStart = Math.max(requestedStart, 8 * 60);
+    let candidateStart = baseStart;
+    let guard = 0;
+
+    while (guard < 24) {
+      guard += 1;
+      const candidateEnd = candidateStart + DEFAULT_SESSION_DURATION;
+
+      const overlapping = columnAppointments
+        .filter((appointment) => overlaps(formatMinutesToTime(candidateStart), formatMinutesToTime(candidateEnd), appointment.start, appointment.end))
+        .sort((a, b) => parseTimeToMinutes(a.start) - parseTimeToMinutes(b.start));
+
+      if (overlapping.length === 0) {
+        return candidateStart;
+      }
+
+      const latestEnd = Math.max(...overlapping.map((appointment) => parseTimeToMinutes(appointment.end || appointment.start)));
+      candidateStart = Math.max(latestEnd, candidateStart + 1);
+    }
+
+    return candidateStart;
+  };
+
+  const handleEmptySlotClick = (
+    event: MouseEvent<HTMLDivElement>,
+    hour: number,
+    col: CalendarColumn,
+  ) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const clickOffset = event.clientY - rect.top;
+    const requestedStart = hour * 60 + (clickOffset >= rect.height / 2 ? 30 : 0);
+    const columnAppointments = getAppointmentsForColumn(col.id);
+    const resolvedStart = resolveNextAvailableStart(columnAppointments, requestedStart);
+    const appointmentDate = format(selectedDate, 'yyyy-MM-dd');
+
+    onOpenModal(
+      viewMode === 'rooms' ? (col.id === 'unassigned' ? undefined : col.name) : undefined,
+      viewMode === 'professionals' ? (col.id === 'unassigned' ? undefined : col.name) : undefined,
+      undefined,
+      {
+        date: appointmentDate,
+        startTime: formatMinutesToTime(resolvedStart),
+      },
+    );
   };
 
   useEffect(() => {
@@ -680,21 +744,19 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
                   className={cn('flex-1 grid divide-x divide-slate-100 relative', viewMode === 'professionals' ? 'grid-cols-7' : 'grid-cols-4')}
                 >
                   {columns.map((col) => {
-                    const columnAppointments = visibleAppointments.filter((appointment) => matchesColumn(appointment, col.id));
+                    const columnAppointments = getAppointmentsForColumn(col.id);
 
                     return (
                       <div
                         key={col.id}
                         className="relative h-full cursor-cell transition-colors hover:bg-slate-50/50"
-                        onClick={() =>
-                          onOpenModal(
-                            viewMode === 'rooms' ? (col.id === 'unassigned' ? undefined : col.name) : undefined,
-                            viewMode === 'professionals' ? (col.id === 'unassigned' ? undefined : col.name) : undefined,
-                          )
-                        }
                       >
                         {HOURS.map((hour) => (
-                          <div key={hour} className="relative h-[88px] border-b border-slate-200/60 w-full">
+                          <div
+                            key={hour}
+                            className="relative h-[88px] border-b border-slate-200/60 w-full cursor-cell"
+                            onClick={(event) => handleEmptySlotClick(event, hour, col)}
+                          >
                             <span className="absolute inset-x-0 top-1/2 border-t border-dashed border-slate-200/70" />
                           </div>
                         ))}

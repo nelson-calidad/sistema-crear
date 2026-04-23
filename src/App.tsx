@@ -142,10 +142,16 @@ export default function App() {
 
   // Global Reservation Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalContext, setModalContext] = useState<{room?: string, pro?: string, appointment?: any}>({});
+  const [modalContext, setModalContext] = useState<{
+    room?: string;
+    pro?: string;
+    appointment?: any;
+    date?: string;
+    startTime?: string;
+  }>({});
 
-  const handleOpenModal = (room?: string, pro?: string, app?: any) => {
-    setModalContext({ room, pro, appointment: app });
+  const handleOpenModal = (room?: string, pro?: string, app?: any, options?: { date?: string; startTime?: string }) => {
+    setModalContext({ room, pro, appointment: app, date: options?.date, startTime: options?.startTime });
     setIsModalOpen(true);
   };
 
@@ -262,6 +268,8 @@ export default function App() {
         professional={modalContext.pro}
         appointments={appointments}
         initialData={modalContext.appointment}
+        initialDate={modalContext.date}
+        initialStartTime={modalContext.startTime}
         onSave={async (data) => {
           if (!user) {
             pushToast('error', 'SesiÃ³n requerida', 'Inicia sesiÃ³n para guardar cambios en la agenda.');

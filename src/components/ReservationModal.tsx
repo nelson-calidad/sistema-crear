@@ -29,6 +29,8 @@ interface ReservationModalProps {
   professional?: string;
   appointments?: AppointmentRecord[];
   initialData?: any;
+  initialDate?: string;
+  initialStartTime?: string;
   onSave: (data: any) => void;
   onDelete?: (id: string) => void;
   isSaving?: boolean;
@@ -82,7 +84,32 @@ const overlaps = (startA: string, endA: string, startB: string, endB: string) =>
   return aStart < bEnd && aEnd > bStart;
 };
 
-export const ReservationModal = ({ isOpen, onClose, room, professional, appointments = [], initialData, onSave, onDelete, isSaving = false, isDeleting = false }: ReservationModalProps) => {
+const getDurationMinutes = (type: 'session' | 'interview' | 'survey') => {
+  if (type === 'interview') return 30;
+  if (type === 'survey') return 20;
+  return 45;
+};
+
+const addMinutesToTime = (time: string, minutes: number) => {
+  const match = String(time).match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) {
+    return time;
+  }
+
+  const hours = Number(match[1]);
+  const mins = Number(match[2]);
+  if (Number.isNaN(hours) || Number.isNaN(mins)) {
+    return time;
+  }
+
+  const totalMinutes = hours * 60 + mins + minutes;
+  const safeMinutes = Math.max(totalMinutes, 0);
+  const nextHours = Math.floor(safeMinutes / 60);
+  const nextMinutes = safeMinutes % 60;
+  return `${nextHours.toString().padStart(2, '0')}:${nextMinutes.toString().padStart(2, '0')}`;
+};
+
+export const ReservationModal = ({ isOpen, onClose, room, professional, appointments = [], initialData, initialDate, initialStartTime, onSave, onDelete, isSaving = false, isDeleting = false }: ReservationModalProps) => {
   const [professionals] = useProfessionals();
   const [type, setType] = useState<'session' | 'interview' | 'survey'>(initialData?.type || 'session');
   const [coverageType, setCoverageType] = useState<'obra social' | 'particular'>(initialData?.coverageType || 'particular');
@@ -95,9 +122,9 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
 
   const [formData, setFormData] = useState({
     patient: initialData?.title || '',
-    date: new Date().toISOString().split('T')[0],
-    startTime: initialData?.start || '08:00',
-    endTime: initialData?.end || '08:45',
+    date: initialData?.date || initialDate || new Date().toISOString().split('T')[0],
+    startTime: initialData?.start || initialStartTime || '08:00',
+    endTime: initialData?.end || addMinutesToTime(initialData?.start || initialStartTime || '08:00', getDurationMinutes(initialData?.type || 'session')),
     notes: initialData?.notes || ''
   });
 
@@ -106,17 +133,7 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
   // Dynamic End Time logic
   useEffect(() => {
     if (!initialData && formData.startTime) { // Only auto-change for NEW reservations
-      const durations = {
-        session: 45,
-        interview: 30,
-        survey: 20
-      };
-      const [h, m] = formData.startTime.split(':').map(Number);
-      const startDate = new Date();
-      startDate.setHours(h, m, 0);
-      const endDate = new Date(startDate.getTime() + durations[type] * 60000);
-      const endStr = `${endDate.getHours().toString().padStart(2, '0')}:${endDate.getMinutes().toString().padStart(2, '0')}`;
-      setFormData(prev => ({ ...prev, endTime: endStr }));
+      setFormData(prev => ({ ...prev, endTime: addMinutesToTime(prev.startTime, getDurationMinutes(type)) }));
     }
   }, [type, initialData, formData.startTime]);
 
@@ -176,7 +193,9 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
         setFormData(prev => ({
           ...prev,
           patient: '',
-          startTime: '08:00',
+          date: initialDate || new Date().toISOString().split('T')[0],
+          startTime: initialStartTime || '08:00',
+          endTime: addMinutesToTime(initialStartTime || '08:00', getDurationMinutes('session')),
           notes: ''
         }));
         setCoverageType('particular');
@@ -194,7 +213,7 @@ export const ReservationModal = ({ isOpen, onClose, room, professional, appointm
         }
       }
     }
-  }, [isOpen, initialData, professional, room, professionals]);
+  }, [isOpen, initialData, initialDate, initialStartTime, professional, room, professionals]);
 
   if (!isOpen) return null;
 
