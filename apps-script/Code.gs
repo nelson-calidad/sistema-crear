@@ -129,7 +129,7 @@ function normalizeAppointment_(appointment) {
     roomId: appointment.roomId ? String(appointment.roomId) : '',
     patient: appointment.patient ? String(appointment.patient) : '',
     notes: appointment.notes ? String(appointment.notes) : '',
-    date: String(appointment.date || ''),
+    date: formatDateValue_(appointment.date),
     start: String(appointment.start || '08:00'),
     end: String(appointment.end || '08:45'),
     recurrence: String(appointment.recurrence || 'none'),
@@ -138,6 +138,44 @@ function normalizeAppointment_(appointment) {
     createdAt: appointment.createdAt ? String(appointment.createdAt) : '',
     updatedAt: appointment.updatedAt ? String(appointment.updatedAt) : '',
   };
+}
+
+function formatDateValue_(value) {
+  if (!value) {
+    return '';
+  }
+
+  if (Object.prototype.toString.call(value) === '[object Date]') {
+    if (isNaN(value.getTime())) {
+      return '';
+    }
+
+    return Utilities.formatDate(value, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  }
+
+  const raw = String(value).trim();
+  if (!raw) {
+    return '';
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    return raw;
+  }
+
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(raw)) {
+    const [day, month, year] = raw.split('/').map(Number);
+    const parsed = new Date(year, month - 1, day);
+    if (!isNaN(parsed.getTime())) {
+      return Utilities.formatDate(parsed, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+    }
+  }
+
+  const parsed = new Date(raw);
+  if (!isNaN(parsed.getTime())) {
+    return Utilities.formatDate(parsed, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  }
+
+  return raw;
 }
 
 function upsertAppointment_(sheet, appointment, allowUpdate) {

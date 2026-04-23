@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   format,
   isSameDay,
@@ -46,10 +46,33 @@ type CalendarColumn = {
   color?: string;
 };
 
-const parseDay = (value?: string) => {
+const parseDay = (value?: string | Date | null) => {
   if (!value) return null;
-  const parsed = new Date(`${value}T00:00:00`);
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
+
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value;
+  }
+
+  const raw = String(value).trim();
+  if (!raw) return null;
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    const parsed = new Date(`${raw}T00:00:00`);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(raw)) {
+    const [day, month, year] = raw.split('/').map(Number);
+    const parsed = new Date(year, month - 1, day);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  const parsed = new Date(raw);
+  if (!Number.isNaN(parsed.getTime())) {
+    return parsed;
+  }
+
+  return null;
 };
 
 const formatLabel = (value?: string) => value || 'Sin título';
@@ -83,6 +106,7 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<'professionals' | 'rooms'>('professionals');
   const [timeMode, setTimeMode] = useState<'daily' | 'monthly'>('daily');
+  const hasSyncedInitialDateRef = useRef(false);
 
   useEffect(() => {
     if (!focusDate) return;
@@ -92,7 +116,27 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
 
     setSelectedDate(parsed);
     setTimeMode('daily');
+    hasSyncedInitialDateRef.current = true;
   }, [focusDate]);
+
+  useEffect(() => {
+    if (hasSyncedInitialDateRef.current) {
+      return;
+    }
+
+    const firstAppointment = [...appointments]
+      .map((appointment) => ({ appointment, date: parseDay(appointment.date) }))
+      .filter((entry): entry is { appointment: AppointmentRecord; date: Date } => Boolean(entry.date))
+      .sort((a, b) => a.date.getTime() - b.date.getTime())[0];
+
+    if (!firstAppointment) {
+      return;
+    }
+
+    setSelectedDate(firstAppointment.date);
+    setTimeMode('daily');
+    hasSyncedInitialDateRef.current = true;
+  }, [appointments]);
 
   const selectedDateAppointments = useMemo(() => {
     return sortByStart(
