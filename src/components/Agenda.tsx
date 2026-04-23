@@ -371,26 +371,21 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
 
   return (
     <div className="h-full flex flex-col gap-1.5 md:gap-2 min-h-0">
-      <div className="flex flex-col gap-1.5 lg:flex-row lg:items-center lg:justify-between">
-        <div className="space-y-0.5 md:space-y-1 max-w-2xl">
+      <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
+        <div className="space-y-1 max-w-2xl">
           <div className="flex items-start gap-2 md:gap-2.5">
             <div className="p-1.5 rounded-2xl bg-gradient-to-br from-cyan-100 via-blue-50 to-lavender-100 text-blue-600 border border-blue-100 shrink-0 shadow-sm">
               <CalendarIcon className="w-4 h-4" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-[0.9rem] md:text-[1.35rem] lg:text-[1.45rem] font-black text-slate-900 tracking-tight leading-tight">
+              <h1 className="text-[1.05rem] md:text-[1.55rem] lg:text-[1.75rem] font-black text-slate-900 tracking-tight leading-tight">
                 <span className="md:hidden">Agenda</span>
                 <span className="hidden md:inline">Agenda Operativa</span>
               </h1>
-              <p className="hidden xl:block text-[11px] text-slate-500 max-w-lg leading-snug">
-                {timeMode === 'daily'
-                  ? 'Controla turnos por profesional o consultorio con lectura rápida.'
-                  : 'Visualiza la carga del mes y entra al día con un clic.'}
-              </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-1 md:gap-1.5">
+          <div className="flex flex-wrap items-center gap-1 md:gap-1.5 lg:hidden">
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100/90 text-slate-600 text-[8px] font-bold border border-slate-200/70">
               <BadgeInfo className="w-3 h-3" />
               {titleCase(formatDateEs(selectedDate, 'EEEE, d MMMM'))}
@@ -404,7 +399,22 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-1 md:gap-1.5 w-full lg:w-auto lg:flex-nowrap overflow-x-auto lg:overflow-visible pb-1 lg:pb-0 custom-scrollbar">
+        <div className="hidden lg:flex flex-col items-end gap-2 shrink-0 pt-1">
+          <div className="flex flex-wrap justify-end items-center gap-1.5">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100/90 text-slate-700 text-[9px] font-bold border border-slate-200/70">
+              <BadgeInfo className="w-3 h-3" />
+              {titleCase(formatDateEs(selectedDate, 'EEEE, d MMMM'))}
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50/90 text-blue-700 text-[9px] font-bold border border-blue-100">
+              {selectedDateAppointments.length} turno{selectedDateAppointments.length === 1 ? '' : 's'} en el día
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50/90 text-emerald-700 text-[9px] font-bold border border-emerald-100">
+              {currentMonthAppointments.length} turno{currentMonthAppointments.length === 1 ? '' : 's'} en el mes
+            </span>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1.5 md:gap-2 w-full lg:w-auto lg:flex-nowrap overflow-x-auto lg:overflow-visible pb-1 lg:pb-0 custom-scrollbar">
           <div className="flex bg-slate-100/80 p-0.5 rounded-xl gap-1 w-full md:w-auto border border-slate-200/70 shrink-0">
             <button
               onClick={() => setTimeMode('daily')}
@@ -472,28 +482,28 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
           )}
 
           <button
-            onClick={() => onOpenModal()}
-              className="inline-flex items-center justify-center gap-2 px-3.5 md:px-4 py-1.5 md:py-2 bg-gradient-to-r from-cyan-500 via-blue-600 to-lavender-500 text-white rounded-xl font-bold text-[11px] hover:brightness-105 transition-colors shadow-lg shadow-blue-200/40 w-full md:w-auto shrink-0"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Nuevo Bloque
-          </button>
+              onClick={() => onOpenModal()}
+              className="inline-flex items-center justify-center gap-2 px-4 md:px-4.5 py-1.75 md:py-2.5 bg-gradient-to-r from-cyan-500 via-blue-600 to-lavender-500 text-white rounded-xl font-bold text-[11px] hover:brightness-105 transition-colors shadow-lg shadow-blue-200/40 w-full md:w-auto shrink-0"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Nuevo Bloque
+            </button>
 
           <button
             onClick={handleDailyPdf}
-            className="hidden sm:inline-flex items-center justify-center gap-2 px-3.5 md:px-4 py-1.5 md:py-2 bg-white/80 text-slate-700 border border-slate-200 rounded-xl font-bold text-[11px] hover:bg-slate-50 transition-colors shadow-sm w-full md:w-auto backdrop-blur-sm shrink-0"
-          >
-            <Printer className="w-3.5 h-3.5" />
-            PDF Día
-          </button>
+            className="hidden sm:inline-flex items-center justify-center gap-2 px-4 md:px-4.5 py-1.75 md:py-2.5 bg-white/80 text-slate-700 border border-slate-200 rounded-xl font-bold text-[11px] hover:bg-slate-50 transition-colors shadow-sm w-full md:w-auto backdrop-blur-sm shrink-0"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              PDF Día
+            </button>
 
           <button
             onClick={handleMonthlyPdf}
-            className="hidden sm:inline-flex items-center justify-center gap-2 px-3.5 md:px-4 py-1.5 md:py-2 bg-white/80 text-slate-700 border border-slate-200 rounded-xl font-bold text-[11px] hover:bg-slate-50 transition-colors shadow-sm w-full md:w-auto backdrop-blur-sm shrink-0"
-          >
-            <Printer className="w-3.5 h-3.5" />
-            PDF Mes
-          </button>
+            className="hidden sm:inline-flex items-center justify-center gap-2 px-4 md:px-4.5 py-1.75 md:py-2.5 bg-white/80 text-slate-700 border border-slate-200 rounded-xl font-bold text-[11px] hover:bg-slate-50 transition-colors shadow-sm w-full md:w-auto backdrop-blur-sm shrink-0"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              PDF Mes
+            </button>
 
           <button
             onClick={() => {
@@ -501,11 +511,11 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
                 console.warn('No se pudo refrescar la agenda manualmente.', error);
               });
             }}
-            className="inline-flex items-center justify-center gap-2 px-3.5 md:px-4 py-1.5 md:py-2 bg-white/80 text-slate-700 border border-slate-200 rounded-xl font-bold text-[11px] hover:bg-slate-50 transition-colors shadow-sm w-full md:w-auto backdrop-blur-sm shrink-0"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-            Refrescar
-          </button>
+            className="inline-flex items-center justify-center gap-2 px-4 md:px-4.5 py-1.75 md:py-2.5 bg-white/80 text-slate-700 border border-slate-200 rounded-xl font-bold text-[11px] hover:bg-slate-50 transition-colors shadow-sm w-full md:w-auto backdrop-blur-sm shrink-0"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              Refrescar
+            </button>
         </div>
       </div>
 
