@@ -241,6 +241,18 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
     }));
   }, [professionals, selectedDateAppointments, viewMode]);
 
+  const mobileRoomColumns = useMemo(() => {
+    const roomPalette = ['bg-cyan-500', 'bg-emerald-500', 'bg-amber-500', 'bg-violet-500', 'bg-rose-500', 'bg-sky-500'];
+
+    return ROOMS.map((room, index) => ({
+      ...room,
+      colorClass: roomPalette[index % roomPalette.length],
+      appointments: sortByStart(
+        selectedDateAppointments.filter((appointment) => appointment.roomId === room.id),
+      ),
+    }));
+  }, [selectedDateAppointments]);
+
   const visibleAppointments = sortByStart(selectedDateAppointments);
   const getPositionFromTime = (timeStr: string) => {
     const minutesSinceStart = parseTimeToMinutes(timeStr) - (8 * 60);
@@ -435,86 +447,187 @@ export const Agenda = ({ onOpenModal, appointments, focusDate }: AgendaProps) =>
         {timeMode === 'daily' ? (
           <>
             <div className="md:hidden p-2 pb-2 space-y-2 overflow-y-auto custom-scrollbar">
-              <div className="flex gap-2 overflow-x-auto pb-1 custom-scrollbar">
-                {mobileResources.map((resource) => {
-                  const isActive = resource.count > 0;
+              {viewMode === 'professionals' ? (
+                <>
+                  <div className="flex gap-2 overflow-x-auto pb-1 custom-scrollbar">
+                    {mobileResources.map((resource) => {
+                      const isActive = resource.count > 0;
 
-                  return (
-                    <button
-                      key={resource.id}
-                      type="button"
-                      onClick={() => {
-                        if (resource.count === 0) return;
-                        const first = selectedDateAppointments.find((appointment) =>
-                          resource.kind === 'professional'
-                            ? appointment.proId === resource.id
-                            : appointment.roomId === resource.id,
-                        );
-                        if (first) {
-                          onOpenModal(
-                            ROOMS.find((room) => room.id === first.roomId)?.name,
-                            professionals.find((professional) => professional.id === first.proId)?.name,
-                            first,
-                          );
-                        }
-                      }}
-                      className={cn(
-                        'min-w-[96px] px-2.5 py-2 rounded-2xl border text-left transition-all shrink-0',
-                        isActive ? 'bg-white border-blue-200 shadow-md shadow-blue-100/40' : 'bg-slate-50/80 border-slate-100 opacity-70',
-                      )}
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className={cn('w-7 h-7 rounded-xl flex items-center justify-center text-white font-black text-[10px]', resource.colorClass)}>
-                          {resource.name[0]}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-[10px] font-black text-slate-900 truncate">{resource.name}</p>
-                          <p className="hidden sm:block text-[9px] uppercase font-bold text-slate-400 truncate">{resource.subtitle}</p>
-                        </div>
-                      </div>
-                      <div className="mt-2 flex items-center justify-between text-[9px] font-black uppercase tracking-[0.14em]">
-                        <span className={isActive ? 'text-blue-600' : 'text-slate-400'}>{resource.count} turnos</span>
-                        <span className="text-slate-400">{resource.kind === 'room' ? 'consultorio' : 'activo'}</span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+                      return (
+                        <button
+                          key={resource.id}
+                          type="button"
+                          onClick={() => {
+                            if (resource.count === 0) return;
+                            const first = selectedDateAppointments.find((appointment) =>
+                              resource.kind === 'professional'
+                                ? appointment.proId === resource.id
+                                : appointment.roomId === resource.id,
+                            );
+                            if (first) {
+                              onOpenModal(
+                                ROOMS.find((room) => room.id === first.roomId)?.name,
+                                professionals.find((professional) => professional.id === first.proId)?.name,
+                                first,
+                              );
+                            }
+                          }}
+                          className={cn(
+                            'min-w-[96px] px-2.5 py-2 rounded-2xl border text-left transition-all shrink-0',
+                            isActive ? 'bg-white border-blue-200 shadow-md shadow-blue-100/40' : 'bg-slate-50/80 border-slate-100 opacity-70',
+                          )}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className={cn('w-7 h-7 rounded-xl flex items-center justify-center text-white font-black text-[10px]', resource.colorClass)}>
+                              {resource.name[0]}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-[10px] font-black text-slate-900 truncate">{resource.name}</p>
+                              <p className="hidden sm:block text-[9px] uppercase font-bold text-slate-400 truncate">{resource.subtitle}</p>
+                            </div>
+                          </div>
+                          <div className="mt-2 flex items-center justify-between text-[9px] font-black uppercase tracking-[0.14em]">
+                            <span className={isActive ? 'text-blue-600' : 'text-slate-400'}>{resource.count} turnos</span>
+                            <span className="text-slate-400">activo</span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
 
-              {visibleAppointments.length === 0 ? (
-                <div className="p-4 rounded-3xl border border-dashed border-slate-200 bg-slate-50 text-center">
-                  <p className="text-sm font-bold text-slate-700">No hay turnos para este día</p>
-                  <p className="text-xs text-slate-500 mt-1">Creá un bloque nuevo para empezar.</p>
-                </div>
+                  {visibleAppointments.length === 0 ? (
+                    <div className="p-4 rounded-3xl border border-dashed border-slate-200 bg-slate-50 text-center">
+                      <p className="text-sm font-bold text-slate-700">No hay turnos para este día</p>
+                      <p className="text-xs text-slate-500 mt-1">Creá un bloque nuevo para empezar.</p>
+                    </div>
+                  ) : (
+                    visibleAppointments.map((app) => {
+                      const pro = professionals.find((p) => p.id === app.proId);
+                      const room = ROOMS.find((r) => r.id === app.roomId);
+
+                      return (
+                        <button
+                          key={app.id}
+                          type="button"
+                          onClick={() => onOpenModal(room?.name, pro?.name, app)}
+                          className={cn('w-full text-left rounded-2xl p-2.5 border shadow-sm backdrop-blur-sm', getTypeStyles(app.type))}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <p className="text-[10px] font-black uppercase tracking-[0.18em] mb-1.5">
+                                {app.start} - {app.end}
+                              </p>
+                              <p className="font-bold text-[13px] truncate leading-tight">{getAppointmentName(app)}</p>
+                              <p className="mt-1.5 text-[11px] font-semibold uppercase tracking-wide opacity-85 truncate">
+                                {getTypeLabel(app.type)} · {getCorrespondsToLabel(app)}
+                              </p>
+                            </div>
+                            <span className="text-[10px] font-black uppercase opacity-75 shrink-0">
+                              {getCoverageLabel(app)}
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })
+                  )}
+                </>
               ) : (
-                visibleAppointments.map((app) => {
-                  const pro = professionals.find((p) => p.id === app.proId);
-                  const room = ROOMS.find((r) => r.id === app.roomId);
+                <div className="space-y-3">
+                  <div className="flex gap-2 overflow-x-auto pb-1 custom-scrollbar">
+                    {mobileRoomColumns.map((room) => {
+                      const isActive = room.appointments.length > 0;
 
-                  return (
-                    <button
-                      key={app.id}
-                      type="button"
-                      onClick={() => onOpenModal(room?.name, pro?.name, app)}
-                      className={cn('w-full text-left rounded-2xl p-2.5 border shadow-sm backdrop-blur-sm', getTypeStyles(app.type))}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0 flex-1">
-                          <p className="text-[10px] font-black uppercase tracking-[0.18em] mb-1.5">
-                            {app.start} - {app.end}
-                          </p>
-                          <p className="font-bold text-[13px] truncate leading-tight">{getAppointmentName(app)}</p>
-                          <p className="mt-1.5 text-[11px] font-semibold uppercase tracking-wide opacity-85 truncate">
-                            {getTypeLabel(app.type)} · {getCorrespondsToLabel(app)}
-                          </p>
+                      return (
+                        <button
+                          key={room.id}
+                          type="button"
+                          onClick={() => onOpenModal(room.name, undefined)}
+                          className={cn(
+                            'min-w-[116px] px-2.5 py-2 rounded-2xl border text-left transition-all shrink-0',
+                            isActive ? 'bg-white border-cyan-200 shadow-md shadow-cyan-100/40' : 'bg-slate-50/80 border-slate-100 opacity-70',
+                          )}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className={cn('w-7 h-7 rounded-xl flex items-center justify-center text-white font-black text-[10px]', room.colorClass)}>
+                              {room.name[0]}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-[10px] font-black text-slate-900 truncate">{room.name}</p>
+                              <p className="text-[9px] uppercase font-bold text-slate-400 truncate">Consultorio</p>
+                            </div>
+                          </div>
+                          <div className="mt-2 flex items-center justify-between text-[9px] font-black uppercase tracking-[0.14em]">
+                            <span className={isActive ? 'text-cyan-600' : 'text-slate-400'}>{room.appointments.length} turnos</span>
+                            <span className="text-slate-400">abrir</span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex gap-2 overflow-x-auto pb-1 custom-scrollbar snap-x snap-mandatory">
+                    {mobileRoomColumns.map((room) => (
+                      <div
+                        key={room.id}
+                        className="min-w-[84%] snap-start rounded-3xl border border-slate-100 bg-white/90 shadow-sm p-3 shrink-0"
+                      >
+                        <div className="flex items-center justify-between gap-2 mb-3">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center text-white font-black text-[11px]', room.colorClass)}>
+                              {room.name[0]}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-black text-slate-900 truncate">{room.name}</p>
+                              <p className="text-[10px] uppercase font-bold text-slate-400 truncate">Consultorio</p>
+                            </div>
+                          </div>
+                          <span className="text-[10px] font-black uppercase tracking-[0.16em] text-cyan-700 bg-cyan-50 border border-cyan-100 px-2 py-1 rounded-full">
+                            {room.appointments.length} turnos
+                          </span>
                         </div>
-                        <span className="text-[10px] font-black uppercase opacity-75 shrink-0">
-                          {getCoverageLabel(app)}
-                        </span>
+
+                        <div className="space-y-2 max-h-[52vh] overflow-y-auto custom-scrollbar pr-1">
+                          {room.appointments.length === 0 ? (
+                            <div className="p-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 text-center">
+                              <p className="text-sm font-bold text-slate-700">Sin turnos</p>
+                              <p className="text-xs text-slate-500 mt-1">Tocá el encabezado para crear uno.</p>
+                            </div>
+                          ) : (
+                            room.appointments.map((app) => {
+                              const pro = professionals.find((p) => p.id === app.proId);
+                              return (
+                                <button
+                                  key={app.id}
+                                  type="button"
+                                  onClick={() => onOpenModal(room.name, pro?.name, app)}
+                                  className={cn(
+                                    'w-full text-left rounded-2xl p-2.5 border shadow-sm backdrop-blur-sm',
+                                    getTypeStyles(app.type),
+                                  )}
+                                >
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div className="min-w-0 flex-1">
+                                      <p className="text-[10px] font-black uppercase tracking-[0.18em] mb-1.5">
+                                        {app.start} - {app.end}
+                                      </p>
+                                      <p className="font-bold text-[13px] truncate leading-tight">{getAppointmentName(app)}</p>
+                                      <p className="mt-1.5 text-[11px] font-semibold uppercase tracking-wide opacity-85 truncate">
+                                        {getTypeLabel(app.type)} · {pro?.name || 'Sin profesional'}
+                                      </p>
+                                    </div>
+                                    <span className="text-[10px] font-black uppercase opacity-75 shrink-0">
+                                      {getCoverageLabel(app)}
+                                    </span>
+                                  </div>
+                                </button>
+                              );
+                            })
+                          )}
+                        </div>
                       </div>
-                    </button>
-                  );
-                })
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
 
