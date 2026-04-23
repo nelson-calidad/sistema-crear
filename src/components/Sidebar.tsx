@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { 
+import {
   LayoutDashboard, 
   Users, 
   Calendar, 
@@ -12,11 +12,11 @@ import {
   Settings, 
   LogOut,
   ChevronLeft,
-  ChevronRight,
-  Stethoscope
+  ChevronRight
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
+import logoCrear from '../assets/logo-crear.jpeg';
 
 interface SidebarItemProps {
   key?: string;
@@ -98,8 +98,8 @@ export const Sidebar = ({ activeTab, setActiveTab, mobileOpen, onCloseMobile }: 
         )}
       >
       <div className="p-6 flex items-center mb-4">
-        <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-cyan-400 via-blue-500 to-lavender-500 flex items-center justify-center text-white shadow-lg shadow-cyan-200/20 ring-1 ring-white/15">
-          <Stethoscope className="w-6 h-6" />
+        <div className="w-12 h-12 rounded-2xl overflow-hidden bg-white/90 border border-white/10 shadow-lg shadow-cyan-200/10 ring-1 ring-white/10">
+          <img src={logoCrear} alt="Logo CREAR" className="w-full h-full object-cover" />
         </div>
         {!isCollapsed && (
           <motion.div
@@ -107,7 +107,8 @@ export const Sidebar = ({ activeTab, setActiveTab, mobileOpen, onCloseMobile }: 
             animate={{ opacity: 1 }}
             className="ml-3 font-black text-slate-900 text-lg leading-tight"
           >
-            Neurometric<br /><span className="text-cyan-600">LAB</span>
+            <span className="text-cyan-600">CREAR</span><br />
+            <span className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500">Espacio terapéutico</span>
           </motion.div>
         )}
       </div>

@@ -10,11 +10,12 @@ import { ProfessionalsGrid } from './components/ProfessionalsGrid';
 import { Agenda } from './components/Agenda';
 import { Finance } from './components/Finance';
 import { Settings } from './components/Settings';
-import { Bell, Menu, Search, User, X } from 'lucide-react';
+import { Bell, Search, User, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useEffect } from 'react';
 import { ReservationModal } from './components/ReservationModal';
 import { deleteAppointment, getBackendLabel, getSessionUser, saveAppointment, subscribeToAppointments } from './lib/appointmentsStore';
+import logoCrear from './assets/logo-crear.jpeg';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -84,13 +85,13 @@ export default function App() {
           <div className="flex items-center gap-3 md:hidden">
             <button
               onClick={() => setMobileSidebarOpen((open) => !open)}
-              className="w-11 h-11 rounded-xl bg-slate-900 text-white flex items-center justify-center"
+              className="w-11 h-11 rounded-xl bg-white/80 border border-white/10 overflow-hidden shadow-sm flex items-center justify-center"
               aria-label="Abrir menú"
             >
-              {mobileSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileSidebarOpen ? <X className="w-5 h-5 text-slate-900" /> : <img src={logoCrear} alt="CREAR" className="w-full h-full object-cover" />}
             </button>
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Neurometric LAB</p>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">CREAR</p>
               <p className="text-sm font-bold text-slate-900">{activeTab}</p>
             </div>
           </div>
