@@ -71,13 +71,18 @@ const getTypeLabel = (kind?: string) => {
 const getCoverageLabel = (appointment: AppointmentRecord) => appointment.coverageType || 'particular';
 
 const getCorrespondsToLabel = (appointment: AppointmentRecord, professionals: ProfessionalRecord[]) => {
-  const pro = professionals.find((p) => p.id === appointment.professionalId || appointment.proId);
+  const pro = professionals.find((p) => p.id === (appointment.professionalId || appointment.proId));
   const room = ROOMS.find((r) => r.id === appointment.roomId);
 
   if (pro && room) return `${pro.name} · ${room.name}`;
   if (pro) return pro.name;
   if (room) return room.name;
   return 'Sin asignar';
+};
+
+const getProfessionalLabel = (appointment: AppointmentRecord, professionals: ProfessionalRecord[]) => {
+  const pro = professionals.find((p) => p.id === (appointment.professionalId || appointment.proId));
+  return pro?.name || 'Sin colaborador';
 };
 
 const parseTimeToMinutes = (value?: string) => {
@@ -442,7 +447,7 @@ const renderReportShell = (title: string, subtitle: string, body: string, landsc
       }
       .week-grid {
         display: grid;
-        grid-template-columns: 128px repeat(7, minmax(0, 1fr));
+        grid-template-columns: 112px repeat(7, minmax(112px, 1fr));
         gap: 8px;
         align-items: stretch;
       }
@@ -459,7 +464,7 @@ const renderReportShell = (title: string, subtitle: string, body: string, landsc
         border-radius: 16px;
         background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
         padding: 10px;
-        min-height: 92px;
+        min-height: 118px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -477,7 +482,7 @@ const renderReportShell = (title: string, subtitle: string, body: string, landsc
         margin-top: 4px;
       }
       .week-cell {
-        min-height: 92px;
+        min-height: 118px;
         border: 1px solid #e2e8f0;
         border-radius: 16px;
         background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
@@ -511,17 +516,27 @@ const renderReportShell = (title: string, subtitle: string, body: string, landsc
         gap: 4px;
       }
       .week-pill {
-        display: flex;
-        justify-content: space-between;
-        gap: 8px;
-        align-items: center;
-        padding: 5px 7px;
-        border-radius: 999px;
+        display: grid;
+        gap: 3px;
+        padding: 6px 7px;
+        border-radius: 10px;
         font-size: 9px;
         font-weight: 800;
         background: #eff6ff;
         color: #1d4ed8;
         border: 1px solid #bfdbfe;
+      }
+      .week-pill .pill-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 6px;
+        align-items: center;
+      }
+      .week-pill .professional {
+        color: #334155;
+        font-size: 9px;
+        font-weight: 900;
+        line-height: 1.15;
       }
       .week-pill.interview { background: #fef3c7; color: #92400e; border-color: #fde68a; }
       .week-pill.block { background: #f3e8ff; color: #6b21a8; border-color: #e9d5ff; }
@@ -790,8 +805,11 @@ export const buildWeeklyAvailabilityPdfHtml = (selectedDate: Date, appointments:
                 <div class="mini-list">
                   ${cell.appointments.slice(0, 2).map((appointment) => `
                     <div class="week-pill ${appointment.kind || appointment.type}">
-                      <span>${escapeHtml(getTypeLabel(appointment.kind || appointment.type))}</span>
-                      <span class="time">${escapeHtml(formatTimeOnly(appointment.start))}</span>
+                      <div class="pill-top">
+                        <span>${escapeHtml(getTypeLabel(appointment.kind || appointment.type))}</span>
+                        <span class="time">${escapeHtml(formatTimeOnly(appointment.start))}</span>
+                      </div>
+                      <div class="professional">${escapeHtml(getProfessionalLabel(appointment, professionals))}</div>
                     </div>
                   `).join('')}
                   ${cell.appointments.length > 2 ? `<div class="subtle">+ ${cell.appointments.length - 2} más</div>` : ''}
